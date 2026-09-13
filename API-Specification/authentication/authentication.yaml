@@ -2,31 +2,34 @@ openapi: 3.0.0
 
 info:
   title: CAB System - Authentication API
+  version: 1.0.0
   description: |
-    API phục vụ các chức năng xác thực và quản lý thông tin
+    API phục vụ xác thực tài khoản và quản lý thông tin
     tài khoản của CAB System.
 
     Phạm vi:
-    - Đăng ký tài khoản khách hàng
-    - Đăng nhập khách hàng và tài xế
-    - Cập nhật thông tin cá nhân/hồ sơ
+    - Đăng ký tài khoản khách hàng.
+    - Đăng nhập khách hàng và tài xế.
+    - Xem thông tin cá nhân/hồ sơ.
+    - Cập nhật thông tin cá nhân/hồ sơ.
+    - Xóa tài khoản.
 
     Traceability:
-    - UC01 - Đăng ký tài khoản
-    - UC02 - Đăng nhập
-    - UC03 - Cập nhật thông tin
-    - FR01 - FR03
-    - BR01
-    - BRL01
-    - NFR05 - NFR07
-    - AC01 - AC03
+    - UC01 - Đăng ký tài khoản.
+    - UC02 - Đăng nhập.
+    - UC03 - Cập nhật thông tin.
+    - FR01 - FR03.
+    - BRL01.
+    - NFR05 - NFR07.
+    - AC01 - AC03.
 
-  version: 1.0.0
+    Lưu ý:
+    GET và DELETE là thiết kế API bổ sung.
+    SRS không quy định riêng hai phương thức này.
 
 servers:
   - url: http://localhost:8080/api/v1
     description: Local development server
-
 
 tags:
   - name: Authentication
@@ -40,12 +43,14 @@ paths:
 
   # ==========================================================
   # API01 - ĐĂNG KÝ TÀI KHOẢN
-  # FR01 / UC01 / AC01
+  # POST /auth/register
+  # UC01 / FR01 / AC01
   # ==========================================================
 
   /auth/register:
 
     post:
+
       tags:
         - Authentication
 
@@ -56,9 +61,9 @@ paths:
         các chức năng yêu cầu tài khoản của CAB System.
 
         Theo SRS:
-        - Actor: Khách hàng
-        - FR01: Đăng ký tài khoản
-        - UC01: Đăng ký tài khoản
+        - Actor: Khách hàng.
+        - UC01: Đăng ký tài khoản.
+        - FR01: Đăng ký tài khoản.
         - AC01: Đăng ký thành công và hệ thống tạo tài khoản.
 
       operationId: registerAccount
@@ -100,18 +105,40 @@ paths:
         '400':
           description: Dữ liệu đăng ký không hợp lệ
 
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_REGISTER_DATA"
+                message: "Dữ liệu đăng ký không hợp lệ."
+
         '409':
           description: Thông tin đăng ký đã tồn tại
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "ACCOUNT_ALREADY_EXISTS"
+                message: "Tài khoản đã tồn tại."
 
 
   # ==========================================================
   # API02 - ĐĂNG NHẬP
-  # FR02 / UC02 / AC02
+  # POST /auth/login
+  # UC02 / FR02 / AC02
   # ==========================================================
 
   /auth/login:
 
     post:
+
       tags:
         - Authentication
 
@@ -124,11 +151,11 @@ paths:
         các chức năng yêu cầu tài khoản.
 
         Theo SRS:
-        - Actor: Khách hàng / Tài xế
-        - FR02: Đăng nhập
-        - UC02: Đăng nhập
-        - BRL01: Xác thực người dùng
-        - NFR06: Xác thực
+        - Actor: Khách hàng / Tài xế.
+        - UC02: Đăng nhập.
+        - FR02: Đăng nhập.
+        - BRL01: Xác thực người dùng.
+        - NFR06: Xác thực.
         - AC02: Đăng nhập bằng thông tin hợp lệ.
 
       operationId: login
@@ -166,25 +193,147 @@ paths:
         '400':
           description: Dữ liệu đăng nhập không hợp lệ
 
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_LOGIN_DATA"
+                message: "Dữ liệu đăng nhập không hợp lệ."
+
         '401':
           description: Thông tin đăng nhập không chính xác
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_CREDENTIALS"
+                message: "Thông tin đăng nhập không chính xác."
 
         '403':
           description: Tài khoản không được phép truy cập
 
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "ACCOUNT_ACCESS_DENIED"
+                message: "Tài khoản không được phép truy cập."
+
 
   # ==========================================================
-  # API03 - CẬP NHẬT THÔNG TIN
-  # FR03 / UC03 / AC03
+  # API03 - XEM THÔNG TIN CÁ NHÂN / HỒ SƠ
+  # GET /users/{userId}/profile
+  # API DESIGN BỔ SUNG
   # ==========================================================
 
   /users/{userId}/profile:
 
-    put:
+    get:
+
       tags:
         - Profile
 
-      summary: Cập nhật thông tin cá nhân/hồ sơ
+      summary: Xem thông tin cá nhân hoặc hồ sơ
+
+      description: |
+        Cho phép người dùng đã xác thực xem thông tin
+        cá nhân hoặc hồ sơ của mình.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng phương thức GET cho UC03.
+
+      operationId: getProfile
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: userId
+          in: path
+          required: true
+
+          description: |
+            Mã người dùng cần xem thông tin.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+      responses:
+
+        '200':
+          description: Lấy thông tin thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+
+              example:
+                userId: "CUS001"
+                role: "CUSTOMER"
+                fullName: "Nguyễn Văn A"
+                phoneNumber: "0901234567"
+                email: "nguyenvana@example.com"
+                message: "Lấy thông tin thành công."
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Người dùng không có quyền xem thông tin này
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy người dùng
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "USER_NOT_FOUND"
+                message: "Không tìm thấy người dùng."
+
+
+    # ========================================================
+    # API04 - CẬP NHẬT THÔNG TIN
+    # PUT /users/{userId}/profile
+    # UC03 / FR03 / AC03
+    # ========================================================
+
+    put:
+
+      tags:
+        - Profile
+
+      summary: Cập nhật thông tin cá nhân hoặc hồ sơ
 
       description: |
         Cho phép khách hàng cập nhật thông tin cá nhân
@@ -194,9 +343,9 @@ paths:
         chức năng này.
 
         Theo SRS:
-        - Actor: Khách hàng / Tài xế
-        - FR03: Cập nhật thông tin
-        - UC03: Cập nhật thông tin cá nhân / hồ sơ
+        - Actor: Khách hàng / Tài xế.
+        - UC03: Cập nhật thông tin.
+        - FR03: Cập nhật thông tin.
         - AC03: Hệ thống ghi nhận thông tin cập nhật.
 
       operationId: updateProfile
@@ -254,14 +403,116 @@ paths:
         '400':
           description: Dữ liệu cập nhật không hợp lệ
 
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
         '401':
           description: Người dùng chưa được xác thực
 
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
         '403':
-          description: Người dùng không có quyền cập nhật thông tin này
+          description: |
+            Người dùng không có quyền cập nhật
+            thông tin này.
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
         '404':
           description: Không tìm thấy người dùng
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+    # ========================================================
+    # API05 - XÓA TÀI KHOẢN
+    # DELETE /users/{userId}/profile
+    # API DESIGN BỔ SUNG
+    # ========================================================
+
+    delete:
+
+      tags:
+        - Profile
+
+      summary: Xóa tài khoản
+
+      description: |
+        Xóa tài khoản người dùng khỏi hệ thống.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng chức năng xóa tài khoản.
+
+      operationId: deleteAccount
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: userId
+          in: path
+          required: true
+
+          description: |
+            Mã tài khoản cần xóa.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+      responses:
+
+        '204':
+          description: Xóa tài khoản thành công
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: |
+            Người dùng không có quyền xóa tài khoản này.
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy người dùng
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "USER_NOT_FOUND"
+                message: "Không tìm thấy người dùng."
 
 
 # ============================================================
@@ -277,8 +528,11 @@ components:
   securitySchemes:
 
     bearerAuth:
+
       type: http
+
       scheme: bearer
+
       bearerFormat: JWT
 
       description: |
@@ -292,9 +546,9 @@ components:
 
   schemas:
 
-    # --------------------------------------------------------
+    # ========================================================
     # REGISTER REQUEST
-    # --------------------------------------------------------
+    # ========================================================
 
     RegisterRequest:
 
@@ -309,30 +563,30 @@ components:
 
         fullName:
           type: string
-          description: Họ và tên khách hàng
+          description: Họ và tên khách hàng.
           example: "Nguyễn Văn A"
 
         phoneNumber:
           type: string
-          description: Số điện thoại đăng ký
+          description: Số điện thoại đăng ký.
           example: "0901234567"
 
         email:
           type: string
           format: email
-          description: Email của khách hàng
+          description: Email của khách hàng.
           example: "nguyenvana@example.com"
 
         password:
           type: string
           format: password
-          description: Mật khẩu tài khoản
+          description: Mật khẩu tài khoản.
           example: "Password123"
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # REGISTER RESPONSE
-    # --------------------------------------------------------
+    # ========================================================
 
     RegisterResponse:
 
@@ -342,12 +596,12 @@ components:
 
         userId:
           type: string
-          description: Mã tài khoản được tạo
+          description: Mã tài khoản được tạo.
           example: "CUS001"
 
         role:
           type: string
-          description: Vai trò tài khoản
+          description: Vai trò tài khoản.
           enum:
             - CUSTOMER
           example: "CUSTOMER"
@@ -370,9 +624,9 @@ components:
           example: "Đăng ký tài khoản thành công."
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # LOGIN REQUEST
-    # --------------------------------------------------------
+    # ========================================================
 
     LoginRequest:
 
@@ -388,20 +642,18 @@ components:
           type: string
           description: |
             Thông tin định danh được sử dụng để đăng nhập.
-
           example: "0901234567"
 
         password:
           type: string
           format: password
-          description: Mật khẩu tài khoản
-
+          description: Mật khẩu tài khoản.
           example: "Password123"
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # LOGIN RESPONSE
-    # --------------------------------------------------------
+    # ========================================================
 
     LoginResponse:
 
@@ -411,12 +663,12 @@ components:
 
         userId:
           type: string
-          description: Mã người dùng
+          description: Mã người dùng.
           example: "CUS001"
 
         role:
           type: string
-          description: Vai trò người dùng
+          description: Vai trò người dùng.
 
           enum:
             - CUSTOMER
@@ -428,8 +680,7 @@ components:
 
         accessToken:
           type: string
-          description: Token xác thực
-
+          description: Token xác thực.
           example: "eyJhbGciOiJIUzI1NiIs..."
 
         message:
@@ -437,9 +688,9 @@ components:
           example: "Đăng nhập thành công."
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # UPDATE PROFILE REQUEST
-    # --------------------------------------------------------
+    # ========================================================
 
     UpdateProfileRequest:
 
@@ -449,24 +700,24 @@ components:
 
         fullName:
           type: string
-          description: Họ và tên
+          description: Họ và tên.
           example: "Nguyễn Văn A"
 
         phoneNumber:
           type: string
-          description: Số điện thoại
+          description: Số điện thoại.
           example: "0901234567"
 
         email:
           type: string
           format: email
-          description: Email
+          description: Email.
           example: "nguyenvana@example.com"
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # PROFILE RESPONSE
-    # --------------------------------------------------------
+    # ========================================================
 
     ProfileResponse:
 
@@ -476,10 +727,12 @@ components:
 
         userId:
           type: string
+          description: Mã người dùng.
           example: "CUS001"
 
         role:
           type: string
+          description: Vai trò người dùng.
 
           enum:
             - CUSTOMER
@@ -503,3 +756,24 @@ components:
         message:
           type: string
           example: "Cập nhật thông tin thành công."
+
+
+    # ========================================================
+    # ERROR RESPONSE
+    # ========================================================
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+          type: string
+          description: Mã lỗi.
+          example: "USER_NOT_FOUND"
+
+        message:
+          type: string
+          description: Nội dung thông báo lỗi.
+          example: "Không tìm thấy người dùng."
