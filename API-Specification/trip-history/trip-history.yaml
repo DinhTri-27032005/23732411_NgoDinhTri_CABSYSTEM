@@ -1,0 +1,403 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Trip History API
+  version: 1.0.0
+  description: |
+    API phục vụ chức năng xem lịch sử chuyến đi
+    của khách hàng trong CAB System.
+
+    Chức năng nghiệp vụ:
+    - Khách hàng xem lịch sử các chuyến đi.
+    - Hệ thống cung cấp thông tin các chuyến đã thực hiện.
+
+    Traceability:
+    - BG06 - Phát triển hệ thống lâu dài.
+    - UC14 - Xem lịch sử chuyến.
+    - FR43-FR44.
+    - AC24.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Trip History
+    description: Lịch sử chuyến đi
+
+
+paths:
+
+  # ==========================================================
+  # API01 - XEM LỊCH SỬ CHUYẾN
+  # UC14 / FR43-FR44 / AC24
+  # ==========================================================
+
+  /trips/history:
+
+    get:
+
+      tags:
+        - Trip History
+
+      summary: Xem lịch sử chuyến
+
+      description: |
+        Cho phép khách hàng xem danh sách lịch sử
+        các chuyến đi của mình.
+
+        Theo SRS:
+        - UC14 - Xem lịch sử chuyến.
+        - Customer có chức năng xem lịch sử.
+        - AC24 - Khách hàng có thể xem lịch sử chuyến.
+
+        SRS không quy định cụ thể:
+        - cách phân trang;
+        - số lượng bản ghi mỗi trang;
+        - điều kiện lọc;
+        - cách sắp xếp.
+
+        Vì vậy các tham số query trong API này
+        là thiết kế API đề xuất.
+
+      operationId: getTripHistory
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: page
+
+          in: query
+
+          required: false
+
+          description: |
+            Số trang cần lấy.
+            Đây là tham số thiết kế API đề xuất.
+
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+
+          example: 1
+
+
+        - name: pageSize
+
+          in: query
+
+          required: false
+
+          description: |
+            Số lượng chuyến trên một trang.
+            Đây là tham số thiết kế API đề xuất.
+
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+
+          example: 10
+
+
+      responses:
+
+        '200':
+
+          description: |
+            Lấy lịch sử chuyến thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripHistoryResponse'
+
+              example:
+
+                page: 1
+
+                pageSize: 10
+
+                totalRecords: 2
+
+                trips:
+
+                  - tripId: "TRIP001"
+                    bookingId: "BOOK001"
+                    customerId: "CUS001"
+                    driverId: "DRV001"
+                    status: "COMPLETED"
+                    pickupLocation: "273 An Dương Vương, TP.HCM"
+                    destination: "227 Nguyễn Văn Cừ, TP.HCM"
+
+                  - tripId: "TRIP002"
+                    bookingId: "BOOK002"
+                    customerId: "CUS001"
+                    driverId: "DRV005"
+                    status: "COMPLETED"
+                    pickupLocation: "10 Lê Lợi, TP.HCM"
+                    destination: "50 Nguyễn Huệ, TP.HCM"
+
+                message: "Lấy lịch sử chuyến thành công."
+
+
+        '401':
+
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền xem lịch sử chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FORBIDDEN"
+                message: "Không có quyền xem lịch sử chuyến."
+
+
+        '404':
+
+          description: |
+            Không tìm thấy dữ liệu lịch sử chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_HISTORY_NOT_FOUND"
+                message: "Không tìm thấy lịch sử chuyến."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # --------------------------------------------------------
+    # TRIP HISTORY RESPONSE
+    # --------------------------------------------------------
+
+    TripHistoryResponse:
+
+      type: object
+
+      properties:
+
+        page:
+
+          type: integer
+
+          description: |
+            Trang hiện tại.
+            Đây là trường thiết kế API đề xuất.
+
+          example: 1
+
+
+        pageSize:
+
+          type: integer
+
+          description: |
+            Số lượng bản ghi trên một trang.
+            Đây là trường thiết kế API đề xuất.
+
+          example: 10
+
+
+        totalRecords:
+
+          type: integer
+
+          description: |
+            Tổng số chuyến trong lịch sử.
+            Đây là trường thiết kế API đề xuất.
+
+          example: 2
+
+
+        trips:
+
+          type: array
+
+          description: |
+            Danh sách các chuyến trong lịch sử.
+
+          items:
+            $ref: '#/components/schemas/TripHistoryItem'
+
+
+        message:
+
+          type: string
+
+          description: |
+            Thông báo kết quả xử lý.
+
+          example: "Lấy lịch sử chuyến thành công."
+
+
+    # --------------------------------------------------------
+    # TRIP HISTORY ITEM
+    # --------------------------------------------------------
+
+    TripHistoryItem:
+
+      type: object
+
+      properties:
+
+        tripId:
+
+          type: string
+
+          description: |
+            Mã chuyến đi.
+
+          example: "TRIP001"
+
+
+        bookingId:
+
+          type: string
+
+          description: |
+            Mã yêu cầu đặt xe.
+
+          example: "BOOK001"
+
+
+        customerId:
+
+          type: string
+
+          description: |
+            Mã khách hàng.
+
+          example: "CUS001"
+
+
+        driverId:
+
+          type: string
+
+          nullable: true
+
+          description: |
+            Mã tài xế.
+
+          example: "DRV001"
+
+
+        status:
+
+          type: string
+
+          description: |
+            Trạng thái chuyến.
+
+            Giá trị COMPLETED trong ví dụ thể hiện
+            chuyến đã hoàn thành.
+
+          example: "COMPLETED"
+
+
+        pickupLocation:
+
+          type: string
+
+          description: |
+            Điểm đón.
+
+          example: "273 An Dương Vương, TP.HCM"
+
+
+        destination:
+
+          type: string
+
+          description: |
+            Điểm đến.
+
+          example: "227 Nguyễn Văn Cừ, TP.HCM"
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: |
+            Mã lỗi API.
+
+          example: "TRIP_HISTORY_NOT_FOUND"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Nội dung lỗi.
+
+          example: "Không tìm thấy lịch sử chuyến."

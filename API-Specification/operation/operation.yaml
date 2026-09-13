@@ -1,0 +1,943 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Operation API
+  version: 1.0.0
+  description: |
+    API phục vụ các chức năng quản lý và xử lý vận hành
+    của CAB System.
+
+    Đối tượng sử dụng:
+    - Nhân viên vận hành.
+
+    Phạm vi:
+    - Quản lý khách hàng.
+    - Quản lý tài xế.
+    - Quản lý phương tiện.
+    - Quản lý chuyến đi.
+    - Tra cứu lịch sử giao dịch.
+    - Xử lý chuyến bị lỗi.
+
+    Traceability:
+    - BG05 - Nâng cao hiệu quả vận hành.
+    - UC16 - Quản lý khách hàng.
+    - UC17 - Quản lý tài xế.
+    - UC18 - Quản lý chuyến đi.
+    - UC19 - Tra cứu lịch sử giao dịch.
+    - UC20 - Xử lý chuyến bị lỗi.
+    - FR46-FR55 - Nhóm yêu cầu chức năng vận hành.
+    - AC26-AC32 - Tiêu chí nghiệm thu vận hành.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+
+  - name: Operation - Customers
+    description: Quản lý khách hàng
+
+  - name: Operation - Drivers
+    description: Quản lý tài xế
+
+  - name: Operation - Vehicles
+    description: Quản lý phương tiện
+
+  - name: Operation - Trips
+    description: Quản lý chuyến đi
+
+  - name: Operation - Transactions
+    description: Tra cứu lịch sử giao dịch
+
+  - name: Operation - Trip Errors
+    description: Xử lý chuyến bị lỗi
+
+
+paths:
+
+  # ==========================================================
+  # 1. QUẢN LÝ KHÁCH HÀNG
+  # UC16 / FR46-FR47 / AC26
+  # ==========================================================
+
+  /operation/customers:
+
+    get:
+
+      tags:
+        - Operation - Customers
+
+      summary: Tra cứu danh sách khách hàng
+
+      description: |
+        Cho phép nhân viên vận hành tra cứu thông tin
+        khách hàng trong hệ thống.
+
+        API này là thiết kế đề xuất để triển khai
+        UC16 - Quản lý khách hàng.
+
+      operationId: getOperationCustomers
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: keyword
+          in: query
+          required: false
+          description: |
+            Từ khóa tra cứu khách hàng.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+      responses:
+
+        '200':
+          description: |
+            Tra cứu danh sách khách hàng thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                type: array
+
+                items:
+                  $ref: '#/components/schemas/CustomerSummary'
+
+              example:
+
+                - customerId: "CUS001"
+                  name: "Nguyen Van A"
+                  status: "ACTIVE"
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  # ==========================================================
+  # 2. QUẢN LÝ TÀI XẾ
+  # UC17 / FR48-FR49 / AC27
+  # ==========================================================
+
+  /operation/drivers:
+
+    get:
+
+      tags:
+        - Operation - Drivers
+
+      summary: Tra cứu danh sách tài xế
+
+      description: |
+        Cho phép nhân viên vận hành tra cứu thông tin
+        tài xế trong hệ thống.
+
+        API này là thiết kế đề xuất để triển khai
+        UC17 - Quản lý tài xế.
+
+      operationId: getOperationDrivers
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: keyword
+          in: query
+          required: false
+          description: |
+            Từ khóa tra cứu tài xế.
+
+          schema:
+            type: string
+
+          example: "DRV001"
+
+        - name: status
+          in: query
+          required: false
+          description: |
+            Trạng thái tài xế.
+
+            Giá trị minh họa, không phải danh sách trạng thái
+            được SRS quy định cố định.
+
+          schema:
+            type: string
+
+          example: "AVAILABLE"
+
+      responses:
+
+        '200':
+          description: |
+            Tra cứu danh sách tài xế thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                type: array
+
+                items:
+                  $ref: '#/components/schemas/DriverSummary'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  # ==========================================================
+  # 3. QUẢN LÝ PHƯƠNG TIỆN
+  # UC17 / FR liên quan phương tiện / AC vận hành
+  # ==========================================================
+
+  /operation/vehicles:
+
+    get:
+
+      tags:
+        - Operation - Vehicles
+
+      summary: Tra cứu danh sách phương tiện
+
+      description: |
+        Cho phép nhân viên vận hành tra cứu thông tin
+        phương tiện trong hệ thống.
+
+        SRS xác định phương tiện là một đối tượng thuộc
+        phạm vi quản lý vận hành.
+
+        Đây là API thiết kế đề xuất để hỗ trợ chức năng
+        quản lý phương tiện.
+
+      operationId: getOperationVehicles
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: keyword
+          in: query
+          required: false
+          description: |
+            Từ khóa tra cứu phương tiện.
+
+          schema:
+            type: string
+
+          example: "VEH001"
+
+      responses:
+
+        '200':
+          description: |
+            Tra cứu danh sách phương tiện thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                type: array
+
+                items:
+                  $ref: '#/components/schemas/VehicleSummary'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  # ==========================================================
+  # 4. QUẢN LÝ CHUYẾN ĐI
+  # UC18 / FR liên quan Trip / AC28
+  # ==========================================================
+
+  /operation/trips:
+
+    get:
+
+      tags:
+        - Operation - Trips
+
+      summary: Tra cứu danh sách chuyến đi
+
+      description: |
+        Cho phép nhân viên vận hành tra cứu các chuyến đi
+        trong hệ thống để phục vụ công tác quản lý vận hành.
+
+        Đây là API thiết kế đề xuất để hỗ trợ UC18 -
+        Quản lý chuyến đi.
+
+      operationId: getOperationTrips
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: status
+          in: query
+          required: false
+          description: |
+            Trạng thái chuyến đi.
+
+            Giá trị cụ thể phụ thuộc vào trạng thái được
+            hệ thống triển khai.
+
+          schema:
+            type: string
+
+          example: "COMPLETED"
+
+        - name: customerId
+          in: query
+          required: false
+          description: |
+            Mã khách hàng.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+        - name: driverId
+          in: query
+          required: false
+          description: |
+            Mã tài xế.
+
+          schema:
+            type: string
+
+          example: "DRV001"
+
+      responses:
+
+        '200':
+          description: |
+            Tra cứu danh sách chuyến đi thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                type: array
+
+                items:
+                  $ref: '#/components/schemas/TripSummary'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  /operation/trips/{tripId}:
+
+    get:
+
+      tags:
+        - Operation - Trips
+
+      summary: Xem thông tin chi tiết chuyến đi
+
+      description: |
+        Cho phép nhân viên vận hành xem thông tin chi tiết
+        của một chuyến đi.
+
+        Đây là API thiết kế đề xuất phục vụ UC18.
+
+      operationId: getOperationTrip
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+          in: path
+          required: true
+          description: |
+            Mã chuyến đi.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      responses:
+
+        '200':
+          description: |
+            Lấy thông tin chuyến đi thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripDetail'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  # ==========================================================
+  # 5. TRA CỨU LỊCH SỬ GIAO DỊCH
+  # UC19 / FR liên quan Payment / AC
+  # ==========================================================
+
+  /operation/transactions:
+
+    get:
+
+      tags:
+        - Operation - Transactions
+
+      summary: Tra cứu lịch sử giao dịch
+
+      description: |
+        Cho phép nhân viên vận hành tra cứu lịch sử
+        giao dịch trong hệ thống.
+
+        Đối tượng giao dịch có liên quan đến Payment.
+
+        API này là thiết kế đề xuất để hỗ trợ
+        UC19 - Tra cứu lịch sử giao dịch.
+
+      operationId: getOperationTransactions
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+          in: query
+          required: false
+          description: |
+            Mã chuyến đi cần tra cứu giao dịch.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+        - name: paymentId
+          in: query
+          required: false
+          description: |
+            Mã giao dịch thanh toán.
+
+          schema:
+            type: string
+
+          example: "PAY001"
+
+      responses:
+
+        '200':
+          description: |
+            Tra cứu lịch sử giao dịch thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                type: array
+
+                items:
+                  $ref: '#/components/schemas/TransactionSummary'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  # ==========================================================
+  # 6. XỬ LÝ CHUYẾN BỊ LỖI
+  # UC20 / FR liên quan xử lý vận hành / AC32
+  # ==========================================================
+
+  /operation/trips/{tripId}/errors:
+
+    post:
+
+      tags:
+        - Operation - Trip Errors
+
+      summary: Xử lý chuyến bị lỗi
+
+      description: |
+        Cho phép nhân viên vận hành ghi nhận và xử lý
+        một chuyến đi gặp lỗi.
+
+        Theo SRS, nhóm chức năng vận hành phải hỗ trợ
+        nhân viên vận hành quản lý và xử lý sự cố.
+
+        Chi tiết chính sách xử lý lỗi cụ thể chưa được
+        SRS quy định, do đó API này chỉ mô tả việc
+        ghi nhận xử lý sự cố ở mức API.
+
+      operationId: handleTripError
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+          in: path
+          required: true
+          description: |
+            Mã chuyến đi gặp lỗi.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/TripErrorRequest'
+
+            example:
+              errorDescription: "Chuyến đi gặp lỗi trong quá trình thực hiện."
+
+      responses:
+
+        '200':
+          description: |
+            Ghi nhận xử lý chuyến bị lỗi thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripErrorResponse'
+
+              example:
+                tripId: "TRIP001"
+                status: "ERROR_HANDLED"
+                message: "Đã ghi nhận xử lý chuyến bị lỗi."
+
+        '400':
+          description: |
+            Thông tin lỗi không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+      description: |
+        Token xác thực của nhân viên vận hành.
+
+
+  # ==========================================================
+  # RESPONSES
+  # ==========================================================
+
+  responses:
+
+    Unauthorized:
+
+      description: |
+        Người dùng chưa được xác thực.
+
+      content:
+
+        application/json:
+
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+          example:
+            code: "UNAUTHORIZED"
+            message: "Người dùng chưa được xác thực."
+
+
+    Forbidden:
+
+      description: |
+        Người dùng không có quyền thực hiện chức năng
+        quản lý vận hành.
+
+      content:
+
+        application/json:
+
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+          example:
+            code: "FORBIDDEN"
+            message: "Không có quyền thực hiện chức năng vận hành."
+
+
+    NotFound:
+
+      description: |
+        Không tìm thấy dữ liệu.
+
+      content:
+
+        application/json:
+
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+          example:
+            code: "NOT_FOUND"
+            message: "Không tìm thấy dữ liệu."
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+
+    # --------------------------------------------------------
+    # CUSTOMER
+    # --------------------------------------------------------
+
+    CustomerSummary:
+
+      type: object
+
+      properties:
+
+        customerId:
+          type: string
+          description: Mã khách hàng.
+          example: "CUS001"
+
+        name:
+          type: string
+          description: Tên khách hàng.
+          example: "Nguyen Van A"
+
+        status:
+          type: string
+          description: |
+            Trạng thái tài khoản khách hàng.
+
+            Giá trị minh họa, không phải Business Rule
+            được SRS quy định.
+
+          example: "ACTIVE"
+
+
+    # --------------------------------------------------------
+    # DRIVER
+    # --------------------------------------------------------
+
+    DriverSummary:
+
+      type: object
+
+      properties:
+
+        driverId:
+          type: string
+          description: Mã tài xế.
+          example: "DRV001"
+
+        name:
+          type: string
+          description: Tên tài xế.
+          example: "Tran Van B"
+
+        status:
+          type: string
+          description: |
+            Trạng thái tài xế.
+
+            Giá trị minh họa.
+
+          example: "AVAILABLE"
+
+
+    # --------------------------------------------------------
+    # VEHICLE
+    # --------------------------------------------------------
+
+    VehicleSummary:
+
+      type: object
+
+      properties:
+
+        vehicleId:
+          type: string
+          description: Mã phương tiện.
+          example: "VEH001"
+
+        driverId:
+          type: string
+          description: Mã tài xế.
+          example: "DRV001"
+
+        vehicleType:
+          type: string
+          description: Loại phương tiện.
+          example: "CAR"
+
+
+    # --------------------------------------------------------
+    # TRIP SUMMARY
+    # --------------------------------------------------------
+
+    TripSummary:
+
+      type: object
+
+      properties:
+
+        tripId:
+          type: string
+          description: Mã chuyến đi.
+          example: "TRIP001"
+
+        customerId:
+          type: string
+          description: Mã khách hàng.
+          example: "CUS001"
+
+        driverId:
+          type: string
+          description: Mã tài xế.
+          example: "DRV001"
+
+        status:
+          type: string
+          description: Trạng thái chuyến đi.
+          example: "COMPLETED"
+
+
+    # --------------------------------------------------------
+    # TRIP DETAIL
+    # --------------------------------------------------------
+
+    TripDetail:
+
+      type: object
+
+      properties:
+
+        tripId:
+          type: string
+          description: Mã chuyến đi.
+          example: "TRIP001"
+
+        customerId:
+          type: string
+          description: Mã khách hàng.
+          example: "CUS001"
+
+        driverId:
+          type: string
+          description: Mã tài xế.
+          example: "DRV001"
+
+        status:
+          type: string
+          description: Trạng thái chuyến đi.
+          example: "COMPLETED"
+
+
+    # --------------------------------------------------------
+    # TRANSACTION
+    # --------------------------------------------------------
+
+    TransactionSummary:
+
+      type: object
+
+      properties:
+
+        paymentId:
+          type: string
+          description: Mã giao dịch.
+          example: "PAY001"
+
+        tripId:
+          type: string
+          description: Mã chuyến đi.
+          example: "TRIP001"
+
+        amount:
+          type: number
+          format: double
+          description: Số tiền giao dịch.
+          example: 85000
+
+        status:
+          type: string
+          description: Trạng thái giao dịch.
+          example: "SUCCESS"
+
+
+    # --------------------------------------------------------
+    # TRIP ERROR REQUEST
+    # --------------------------------------------------------
+
+    TripErrorRequest:
+
+      type: object
+
+      required:
+
+        - errorDescription
+
+      properties:
+
+        errorDescription:
+
+          type: string
+
+          description: |
+            Mô tả sự cố xảy ra đối với chuyến đi.
+
+            SRS không quy định danh sách loại lỗi cố định.
+
+          example: "Chuyến đi gặp lỗi trong quá trình thực hiện."
+
+
+    # --------------------------------------------------------
+    # TRIP ERROR RESPONSE
+    # --------------------------------------------------------
+
+    TripErrorResponse:
+
+      type: object
+
+      properties:
+
+        tripId:
+
+          type: string
+
+          description: Mã chuyến đi.
+
+          example: "TRIP001"
+
+
+        status:
+
+          type: string
+
+          description: |
+            Kết quả xử lý sự cố.
+
+            Giá trị minh họa.
+
+          example: "ERROR_HANDLED"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Thông báo kết quả xử lý.
+
+          example: "Đã ghi nhận xử lý chuyến bị lỗi."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: Mã lỗi.
+
+          example: "FORBIDDEN"
+
+
+        message:
+
+          type: string
+
+          description: Nội dung lỗi.
+
+          example: "Không có quyền thực hiện chức năng vận hành."

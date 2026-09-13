@@ -1,0 +1,917 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Driver Matching API
+  version: 1.0.0
+  description: |
+    API phục vụ chức năng tìm và phân công tài xế cho yêu cầu đặt xe.
+
+    Chức năng nghiệp vụ:
+    - Xác định tài xế phù hợp.
+    - Ưu tiên tài xế phù hợp và gần khách hàng.
+    - Gửi yêu cầu chuyến đến tài xế.
+    - Ghi nhận tài xế chấp nhận hoặc từ chối.
+    - Tiếp tục tìm tài xế khác khi tài xế từ chối hoặc không phản hồi.
+    - Thông báo khi không tìm được tài xế.
+
+    Traceability:
+    - BR03 - Xác định tài xế phù hợp.
+    - BR04 - Xử lý tài xế chấp nhận/từ chối.
+    - BR05 - Tìm tài xế khác khi tài xế từ chối.
+    - BR06 - Xử lý khi tài xế không phản hồi.
+    - UC06 - Tìm và phân công tài xế.
+    - UC07 - Chấp nhận / từ chối chuyến.
+    - FR08 - Xác định tài xế phù hợp.
+    - FR09 - Ưu tiên tài xế.
+    - FR10 - Gửi yêu cầu chuyến.
+    - FR11 - Chấp nhận chuyến.
+    - FR12 - Từ chối chuyến.
+    - FR13 - Tìm tài xế tiếp theo.
+    - FR14 - Thông báo không tìm được tài xế.
+    - AC06 - Tìm tài xế phù hợp.
+    - AC07 - Ưu tiên tài xế.
+    - AC08 - Tài xế chấp nhận chuyến.
+    - AC09 - Tài xế từ chối chuyến.
+    - AC10 - Tài xế không phản hồi.
+    - AC11 - Không tìm được tài xế.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Driver Matching
+    description: Tìm và phân công tài xế
+
+
+paths:
+
+  # ==========================================================
+  # API01 - TÌM TÀI XẾ PHÙ HỢP
+  # FR08 / BR03 / AC06
+  # ==========================================================
+
+  /bookings/{bookingId}/driver-matching:
+
+    post:
+
+      tags:
+        - Driver Matching
+
+      summary: Tìm tài xế phù hợp
+
+      description: |
+        Hệ thống tìm tài xế phù hợp cho một yêu cầu đặt xe.
+
+        Việc xác định tài xế dựa trên:
+        - Vị trí tài xế.
+        - Trạng thái sẵn sàng.
+        - Các tiêu chí vận hành được xác định.
+
+        Theo SRS:
+        FR08 - Hệ thống phải xác định tài xế phù hợp
+        cho yêu cầu đặt xe.
+
+        BR03 - Hệ thống xác định tài xế phù hợp dựa trên
+        vị trí, trạng thái sẵn sàng và các tiêu chí vận hành.
+
+      operationId: findSuitableDriver
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: bookingId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu đặt xe cần tìm tài xế.
+
+          schema:
+            type: string
+
+          example: "BOOK001"
+
+      responses:
+
+        '200':
+          description: |
+            Đã xác định được tài xế phù hợp.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/DriverMatchingResponse'
+
+              example:
+                bookingId: "BOOK001"
+                driverId: "DRV001"
+                status: "DRIVER_FOUND"
+                message: "Đã tìm thấy tài xế phù hợp."
+
+        '401':
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+        '404':
+          description: |
+            Không tìm thấy yêu cầu đặt xe.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "BOOKING_NOT_FOUND"
+                message: "Không tìm thấy yêu cầu đặt xe."
+
+        '409':
+          description: |
+            Không tìm được tài xế phù hợp.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "NO_DRIVER_FOUND"
+                message: "Không tìm được tài xế phù hợp."
+
+
+  # ==========================================================
+  # API02 - GỬI YÊU CẦU CHUYẾN CHO TÀI XẾ
+  # FR10 / AC07
+  # ==========================================================
+
+  /bookings/{bookingId}/driver-request:
+
+    post:
+
+      tags:
+        - Driver Matching
+
+      summary: Gửi yêu cầu chuyến đến tài xế
+
+      description: |
+        Hệ thống gửi yêu cầu chuyến đến tài xế phù hợp
+        đã được xác định.
+
+        Theo SRS:
+        FR10 - Hệ thống phải gửi yêu cầu chuyến đến
+        tài xế phù hợp.
+
+        Tài xế được ưu tiên dựa trên các tiêu chí tìm kiếm,
+        trong đó có vị trí gần khách hàng.
+
+      operationId: sendDriverRequest
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: bookingId
+
+          in: path
+
+          required: true
+
+          description: Mã yêu cầu đặt xe.
+
+          schema:
+            type: string
+
+          example: "BOOK001"
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+
+            example:
+              driverId: "DRV001"
+
+      responses:
+
+        '200':
+          description: |
+            Yêu cầu chuyến đã được gửi đến tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/DriverRequestResponse'
+
+              example:
+                bookingId: "BOOK001"
+                driverId: "DRV001"
+                status: "REQUEST_SENT"
+                message: "Yêu cầu chuyến đã được gửi đến tài xế."
+
+        '400':
+          description: |
+            Yêu cầu gửi đến tài xế không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: |
+            Không tìm thấy yêu cầu đặt xe hoặc tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '409':
+          description: |
+            Tài xế không còn phù hợp hoặc không sẵn sàng nhận chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # ==========================================================
+  # API03 - TÀI XẾ CHẤP NHẬN CHUYẾN
+  # FR11 / BR04 / AC08
+  # ==========================================================
+
+  /trip-requests/{requestId}/accept:
+
+    post:
+
+      tags:
+        - Driver Matching
+
+      summary: Tài xế chấp nhận chuyến
+
+      description: |
+        Cho phép tài xế chấp nhận yêu cầu chuyến được
+        hệ thống gửi đến.
+
+        Khi tài xế chấp nhận:
+        - Hệ thống ghi nhận tài xế đã nhận chuyến.
+        - Tài xế được phân công cho yêu cầu đặt xe.
+
+        Theo SRS:
+        FR11 - Hệ thống phải cho phép tài xế chấp nhận
+        yêu cầu chuyến.
+
+        AC08 - Khi tài xế chấp nhận yêu cầu, hệ thống
+        ghi nhận tài xế đã nhận chuyến và phân công
+        tài xế cho yêu cầu.
+
+      operationId: acceptTripRequest
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: requestId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu chuyến được gửi đến tài xế.
+
+          schema:
+            type: string
+
+          example: "REQ001"
+
+      responses:
+
+        '200':
+          description: |
+            Tài xế đã chấp nhận chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripRequestResponse'
+
+              example:
+                requestId: "REQ001"
+                bookingId: "BOOK001"
+                driverId: "DRV001"
+                status: "ACCEPTED"
+                message: "Tài xế đã chấp nhận chuyến."
+
+        '401':
+          description: |
+            Tài xế chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: |
+            Không tìm thấy yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '409':
+          description: |
+            Yêu cầu chuyến không còn ở trạng thái có thể
+            được chấp nhận.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # ==========================================================
+  # API04 - TÀI XẾ TỪ CHỐI CHUYẾN
+  # FR12 / BR05 / AC09
+  # ==========================================================
+
+  /trip-requests/{requestId}/reject:
+
+    post:
+
+      tags:
+        - Driver Matching
+
+      summary: Tài xế từ chối chuyến
+
+      description: |
+        Cho phép tài xế từ chối yêu cầu chuyến được
+        hệ thống gửi đến.
+
+        Khi tài xế từ chối:
+        - Hệ thống ghi nhận việc từ chối.
+        - Khách hàng không phải tạo lại yêu cầu.
+        - Hệ thống tiếp tục tìm tài xế khác.
+
+        Theo SRS:
+        FR12 - Hệ thống phải cho phép tài xế từ chối
+        yêu cầu chuyến.
+
+        FR13 - Khi tài xế từ chối hoặc không phản hồi,
+        hệ thống tiếp tục tìm tài xế khác.
+
+      operationId: rejectTripRequest
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: requestId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu chuyến được gửi đến tài xế.
+
+          schema:
+            type: string
+
+          example: "REQ001"
+
+      requestBody:
+
+        required: false
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/RejectTripRequest'
+
+            example:
+              reason: "Không thể nhận chuyến."
+
+      responses:
+
+        '200':
+          description: |
+            Tài xế đã từ chối chuyến và hệ thống tiếp tục
+            quá trình tìm tài xế khác.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripRequestResponse'
+
+              example:
+                requestId: "REQ001"
+                bookingId: "BOOK001"
+                driverId: "DRV001"
+                status: "REJECTED"
+                message: "Tài xế đã từ chối. Hệ thống tiếp tục tìm tài xế khác."
+
+        '401':
+          description: |
+            Tài xế chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: |
+            Không tìm thấy yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '409':
+          description: |
+            Yêu cầu chuyến không còn ở trạng thái có thể từ chối.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # ==========================================================
+  # API05 - TÌM TÀI XẾ TIẾP THEO
+  # FR13 / BR05 / BR06 / AC09 / AC10
+  # ==========================================================
+
+  /bookings/{bookingId}/driver-matching/next:
+
+    post:
+
+      tags:
+        - Driver Matching
+
+      summary: Tìm tài xế tiếp theo
+
+      description: |
+        Hệ thống tiếp tục tìm tài xế khác khi tài xế trước đó
+        từ chối hoặc không phản hồi.
+
+        Khách hàng không cần tạo lại yêu cầu đặt xe.
+
+        Theo SRS:
+        FR13 - Khi tài xế từ chối hoặc không phản hồi,
+        hệ thống phải tiếp tục tìm tài xế khác.
+
+        BR05 - Tài xế từ chối chuyến.
+
+        BR06 - Tài xế không phản hồi.
+
+      operationId: findNextDriver
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: bookingId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu đặt xe cần tiếp tục tìm tài xế.
+
+          schema:
+            type: string
+
+          example: "BOOK001"
+
+      responses:
+
+        '200':
+          description: |
+            Đã tìm thấy tài xế tiếp theo.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/DriverMatchingResponse'
+
+              example:
+                bookingId: "BOOK001"
+                driverId: "DRV002"
+                status: "DRIVER_FOUND"
+                message: "Đã tìm thấy tài xế tiếp theo."
+
+        '404':
+          description: |
+            Không tìm được tài xế phù hợp.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "NO_DRIVER_FOUND"
+                message: "Không tìm được tài xế phù hợp."
+
+
+  # ==========================================================
+  # API06 - THÔNG BÁO KHÔNG TÌM ĐƯỢC TÀI XẾ
+  # FR14 / BR06 / AC11
+  # ==========================================================
+
+  /bookings/{bookingId}/driver-matching/status:
+
+    get:
+
+      tags:
+        - Driver Matching
+
+      summary: Kiểm tra kết quả tìm tài xế
+
+      description: |
+        Trả về trạng thái quá trình tìm và phân công tài xế.
+
+        Nếu không tìm được tài xế phù hợp, hệ thống phải
+        thông báo rõ ràng cho khách hàng.
+
+        Theo SRS:
+        FR14 - Khi không tìm được tài xế, hệ thống phải
+        thông báo rõ ràng cho khách hàng.
+
+      operationId: getDriverMatchingStatus
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: bookingId
+
+          in: path
+
+          required: true
+
+          description: Mã yêu cầu đặt xe.
+
+          schema:
+            type: string
+
+          example: "BOOK001"
+
+      responses:
+
+        '200':
+          description: |
+            Lấy trạng thái tìm tài xế thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/MatchingStatusResponse'
+
+              example:
+                bookingId: "BOOK001"
+                status: "NO_DRIVER_FOUND"
+                message: "Không tìm được tài xế phù hợp."
+
+
+        '404':
+          description: |
+            Không tìm thấy yêu cầu đặt xe.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+
+    # --------------------------------------------------------
+    # DRIVER REQUEST
+    # --------------------------------------------------------
+
+    DriverRequest:
+
+      type: object
+
+      required:
+        - driverId
+
+      properties:
+
+        driverId:
+
+          type: string
+
+          description: |
+            Mã tài xế được hệ thống lựa chọn để gửi yêu cầu.
+
+          example: "DRV001"
+
+
+    # --------------------------------------------------------
+    # REJECT TRIP REQUEST
+    # --------------------------------------------------------
+
+    RejectTripRequest:
+
+      type: object
+
+      properties:
+
+        reason:
+
+          type: string
+
+          description: |
+            Lý do tài xế từ chối chuyến.
+
+            SRS không quy định bắt buộc phải cung cấp lý do.
+            Trường này là thiết kế API đề xuất.
+
+          example: "Không thể nhận chuyến."
+
+
+    # --------------------------------------------------------
+    # DRIVER MATCHING RESPONSE
+    # --------------------------------------------------------
+
+    DriverMatchingResponse:
+
+      type: object
+
+      properties:
+
+        bookingId:
+
+          type: string
+
+          description: Mã yêu cầu đặt xe.
+
+          example: "BOOK001"
+
+
+        driverId:
+
+          type: string
+
+          description: |
+            Mã tài xế được hệ thống xác định.
+
+          example: "DRV001"
+
+
+        status:
+
+          type: string
+
+          enum:
+            - DRIVER_FOUND
+            - NO_DRIVER_FOUND
+
+          description: |
+            Kết quả tìm tài xế.
+
+          example: "DRIVER_FOUND"
+
+
+        message:
+
+          type: string
+
+          description: Thông báo kết quả.
+
+          example: "Đã tìm thấy tài xế phù hợp."
+
+
+    # --------------------------------------------------------
+    # DRIVER REQUEST RESPONSE
+    # --------------------------------------------------------
+
+    DriverRequestResponse:
+
+      type: object
+
+      properties:
+
+        requestId:
+
+          type: string
+
+          description: Mã yêu cầu chuyến.
+
+          example: "REQ001"
+
+
+        bookingId:
+
+          type: string
+
+          description: Mã yêu cầu đặt xe.
+
+          example: "BOOK001"
+
+
+        driverId:
+
+          type: string
+
+          description: Mã tài xế.
+
+          example: "DRV001"
+
+
+        status:
+
+          type: string
+
+          enum:
+            - REQUEST_SENT
+            - ACCEPTED
+            - REJECTED
+
+          description: |
+            Trạng thái yêu cầu chuyến.
+
+          example: "ACCEPTED"
+
+
+        message:
+
+          type: string
+
+          description: Thông báo kết quả.
+
+          example: "Tài xế đã chấp nhận chuyến."
+
+
+    # --------------------------------------------------------
+    # MATCHING STATUS RESPONSE
+    # --------------------------------------------------------
+
+    MatchingStatusResponse:
+
+      type: object
+
+      properties:
+
+        bookingId:
+
+          type: string
+
+          description: Mã yêu cầu đặt xe.
+
+          example: "BOOK001"
+
+
+        status:
+
+          type: string
+
+          enum:
+            - SEARCHING
+            - DRIVER_FOUND
+            - DRIVER_ASSIGNED
+            - NO_DRIVER_FOUND
+
+          description: |
+            Trạng thái quá trình tìm và phân công tài xế.
+
+          example: "SEARCHING"
+
+
+        message:
+
+          type: string
+
+          description: Thông báo trạng thái.
+
+          example: "Đang tìm tài xế phù hợp."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: Mã lỗi.
+
+          example: "NO_DRIVER_FOUND"
+
+
+        message:
+
+          type: string
+
+          description: Nội dung lỗi.
+
+          example: "Không tìm được tài xế phù hợp."

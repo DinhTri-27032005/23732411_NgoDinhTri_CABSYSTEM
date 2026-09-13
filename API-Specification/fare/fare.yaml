@@ -1,0 +1,393 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Fare API
+  version: 1.0.0
+  description: |
+    API phục vụ chức năng tính cước chuyến đi.
+
+    Chức năng nghiệp vụ:
+    - Tính cước sau khi chuyến đi hoàn thành.
+    - Lưu thông tin cước của chuyến đi.
+    - Cung cấp thông tin cước cho quá trình thanh toán.
+
+    Traceability:
+    - UC10 - Tính cước
+    - FR18 - Tính cước
+    - AC15 - Hoàn thành chuyến và tính cước
+    - AC16 - Tính cước chuyến đi
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Fare
+    description: Tính và tra cứu cước chuyến đi
+
+
+paths:
+
+  # ==========================================================
+  # API01 - TÍNH CƯỚC CHUYẾN ĐI
+  # UC10 / FR18 / AC15 / AC16
+  # ==========================================================
+
+  /trips/{tripId}/fare:
+
+    post:
+
+      tags:
+        - Fare
+
+      summary: Tính cước chuyến đi
+
+      description: |
+        Hệ thống thực hiện tính cước cho chuyến đi sau khi
+        chuyến đã hoàn thành.
+
+        Theo SRS:
+        - UC10: Tính cước
+        - FR18: Hệ thống phải tính cước cho chuyến đi.
+        - AC15: Khi chuyến đi hoàn thành, hệ thống thực hiện
+          tính cước.
+        - AC16: Hệ thống tính và lưu thông tin cước của
+          chuyến đi.
+
+        SRS không quy định cụ thể công thức tính cước,
+        đơn giá hoặc các loại phụ phí.
+
+      operationId: calculateFare
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+          in: path
+          required: true
+          description: |
+            Mã chuyến đi cần tính cước.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      responses:
+
+        '200':
+          description: |
+            Tính cước chuyến đi thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/FareResponse'
+
+              example:
+                fareId: "FARE001"
+                tripId: "TRIP001"
+                amount: 85000
+                currency: "VND"
+                status: "CALCULATED"
+                message: "Đã tính cước chuyến đi."
+
+        '400':
+          description: |
+            Chuyến đi chưa hoàn thành hoặc dữ liệu chuyến
+            không hợp lệ để tính cước.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_COMPLETED"
+                message: "Chuyến đi chưa hoàn thành."
+
+        '401':
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+        '404':
+          description: |
+            Không tìm thấy chuyến đi.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_FOUND"
+                message: "Không tìm thấy chuyến đi."
+
+        '409':
+          description: |
+            Cước của chuyến đi đã được tính trước đó.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FARE_ALREADY_CALCULATED"
+                message: "Cước của chuyến đi đã được tính."
+
+
+  # ==========================================================
+  # API02 - TRA CỨU CƯỚC
+  # UC10 / FR18
+  # ==========================================================
+
+    get:
+
+      tags:
+        - Fare
+
+      summary: Tra cứu cước chuyến đi
+
+      description: |
+        Cho phép lấy thông tin cước đã được hệ thống tính
+        cho một chuyến đi.
+
+        API này hỗ trợ quá trình hiển thị thông tin cước
+        và thực hiện thanh toán.
+
+        Đây là API thiết kế bổ sung để phục vụ việc truy xuất
+        dữ liệu Fare. SRS xác định hệ thống phải tính và lưu
+        thông tin cước nhưng không đặc tả riêng API GET.
+
+      operationId: getFare
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+          in: path
+          required: true
+          description: |
+            Mã chuyến đi cần tra cứu cước.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      responses:
+
+        '200':
+          description: |
+            Lấy thông tin cước thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/FareResponse'
+
+              example:
+                fareId: "FARE001"
+                tripId: "TRIP001"
+                amount: 85000
+                currency: "VND"
+                status: "CALCULATED"
+                message: "Lấy thông tin cước thành công."
+
+        '401':
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+        '404':
+          description: |
+            Không tìm thấy thông tin cước.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FARE_NOT_FOUND"
+                message: "Chưa có thông tin cước cho chuyến đi."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+
+    # --------------------------------------------------------
+    # FARE RESPONSE
+    # --------------------------------------------------------
+
+    FareResponse:
+
+      type: object
+
+      description: |
+        Thông tin cước của chuyến đi.
+
+      properties:
+
+        fareId:
+
+          type: string
+
+          description: |
+            Mã cước.
+
+          example: "FARE001"
+
+
+        tripId:
+
+          type: string
+
+          description: |
+            Mã chuyến đi.
+
+          example: "TRIP001"
+
+
+        amount:
+
+          type: number
+
+          format: double
+
+          description: |
+            Số tiền cước của chuyến đi.
+
+            Giá trị cụ thể và công thức tính cước chưa được
+            SRS quy định.
+
+          example: 85000
+
+
+        currency:
+
+          type: string
+
+          description: |
+            Đơn vị tiền tệ.
+
+            Giá trị VND là giá trị thiết kế đề xuất cho
+            hệ thống tại Việt Nam.
+
+          example: "VND"
+
+
+        status:
+
+          type: string
+
+          enum:
+            - CALCULATED
+
+          description: |
+            Trạng thái tính cước.
+
+          example: "CALCULATED"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Thông báo kết quả xử lý.
+
+          example: "Đã tính cước chuyến đi."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: |
+            Mã lỗi.
+
+          example: "TRIP_NOT_COMPLETED"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Nội dung thông báo lỗi.
+
+          example: "Chuyến đi chưa hoàn thành."

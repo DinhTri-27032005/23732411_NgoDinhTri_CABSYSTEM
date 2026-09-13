@@ -1,0 +1,604 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Rating API
+  version: 1.0.0
+  description: |
+    API phục vụ chức năng đánh giá tài xế sau chuyến đi.
+
+    Chức năng nghiệp vụ:
+    - Khách hàng đánh giá tài xế sau khi chuyến hoàn thành.
+    - Hệ thống lưu thông tin đánh giá.
+    - Tra cứu thông tin đánh giá của một chuyến đi.
+    - Tra cứu các đánh giá của tài xế.
+
+    Traceability:
+    - BG06 - Phát triển hệ thống lâu dài.
+    - UC15 - Đánh giá tài xế.
+    - FR43-FR45 - Yêu cầu đánh giá sau chuyến.
+    - AC24-AC25 - Tiêu chí nghiệm thu đánh giá.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Rating
+    description: Đánh giá tài xế
+
+
+paths:
+
+  # ==========================================================
+  # API01 - ĐÁNH GIÁ TÀI XẾ
+  # UC15 / FR45 / AC25
+  # ==========================================================
+
+  /ratings:
+
+    post:
+
+      tags:
+        - Rating
+
+      summary: Đánh giá tài xế
+
+      description: |
+        Cho phép khách hàng đánh giá tài xế sau khi chuyến
+        đi đã hoàn thành.
+
+        Theo SRS:
+        - UC15 - Đánh giá tài xế.
+        - Rating lưu thông tin đánh giá của khách hàng
+          đối với tài xế sau khi chuyến hoàn thành.
+        - AC25 - Khách hàng có thể đánh giá tài xế sau
+          khi chuyến hoàn thành.
+
+        SRS không quy định cụ thể:
+        - thang điểm đánh giá;
+        - số điểm tối đa;
+        - nội dung bình luận bắt buộc;
+        - số lần được đánh giá.
+
+        Vì vậy các trường và giá trị minh họa trong API
+        cần được xem là thiết kế API đề xuất.
+
+      operationId: createRating
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/CreateRatingRequest'
+
+            example:
+              tripId: "TRIP001"
+              driverId: "DRV001"
+              score: 5
+              comment: "Tài xế phục vụ tốt."
+
+
+      responses:
+
+        '201':
+
+          description: |
+            Đánh giá tài xế thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+
+              example:
+                ratingId: "RATE001"
+                tripId: "TRIP001"
+                customerId: "CUS001"
+                driverId: "DRV001"
+                score: 5
+                comment: "Tài xế phục vụ tốt."
+                message: "Đánh giá tài xế thành công."
+
+
+        '400':
+
+          description: |
+            Thông tin đánh giá không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_RATING"
+                message: "Thông tin đánh giá không hợp lệ."
+
+
+        '401':
+
+          description: |
+            Khách hàng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền đánh giá tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FORBIDDEN"
+                message: "Không có quyền thực hiện đánh giá."
+
+
+        '404':
+
+          description: |
+            Không tìm thấy chuyến đi hoặc tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_FOUND"
+                message: "Không tìm thấy chuyến đi."
+
+
+        '409':
+
+          description: |
+            Đánh giá không thể thực hiện.
+
+            Ví dụ:
+            - Chuyến đi chưa hoàn thành.
+            - Khách hàng đã đánh giá chuyến đi.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_COMPLETED"
+                message: "Chỉ có thể đánh giá sau khi chuyến đi hoàn thành."
+
+
+  # ==========================================================
+  # API02 - XEM ĐÁNH GIÁ CỦA CHUYẾN ĐI
+  # HỖ TRỢ UC15
+  # ==========================================================
+
+  /trips/{tripId}/rating:
+
+    get:
+
+      tags:
+        - Rating
+
+      summary: Xem đánh giá của chuyến đi
+
+      description: |
+        Cho phép lấy thông tin đánh giá liên quan đến một
+        chuyến đi.
+
+        Đây là API thiết kế bổ sung để tra cứu dữ liệu Rating.
+        SRS xác định Rating được lưu theo chuyến đi nhưng không
+        đặc tả riêng API GET này.
+
+      operationId: getTripRating
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã chuyến đi.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      responses:
+
+        '200':
+
+          description: |
+            Lấy đánh giá thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+
+              example:
+                ratingId: "RATE001"
+                tripId: "TRIP001"
+                customerId: "CUS001"
+                driverId: "DRV001"
+                score: 5
+                comment: "Tài xế phục vụ tốt."
+                message: "Lấy đánh giá thành công."
+
+
+        '401':
+
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '404':
+
+          description: |
+            Chưa có đánh giá cho chuyến đi.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "RATING_NOT_FOUND"
+                message: "Chưa có đánh giá cho chuyến đi."
+
+
+  # ==========================================================
+  # API03 - XEM CÁC ĐÁNH GIÁ CỦA TÀI XẾ
+  # HỖ TRỢ BDM Driver -> Rating
+  # ==========================================================
+
+  /drivers/{driverId}/ratings:
+
+    get:
+
+      tags:
+        - Rating
+
+      summary: Xem danh sách đánh giá của tài xế
+
+      description: |
+        Cho phép tra cứu các đánh giá mà tài xế đã nhận
+        từ khách hàng.
+
+        SRS xác định:
+        - Một tài xế có thể nhận nhiều đánh giá từ khách hàng.
+        - Quan hệ Driver -> Rating là 1:N.
+
+        Đây là API thiết kế bổ sung để hỗ trợ việc tra cứu
+        dữ liệu đánh giá.
+
+      operationId: getDriverRatings
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: driverId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã tài xế.
+
+          schema:
+            type: string
+
+          example: "DRV001"
+
+      responses:
+
+        '200':
+
+          description: |
+            Lấy danh sách đánh giá của tài xế thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+
+                type: array
+
+                items:
+                  $ref: '#/components/schemas/RatingResponse'
+
+              example:
+
+                - ratingId: "RATE001"
+                  tripId: "TRIP001"
+                  customerId: "CUS001"
+                  driverId: "DRV001"
+                  score: 5
+                  comment: "Tài xế phục vụ tốt."
+                  message: "Đánh giá đã được lưu."
+
+                - ratingId: "RATE002"
+                  tripId: "TRIP002"
+                  customerId: "CUS002"
+                  driverId: "DRV001"
+                  score: 4
+                  comment: "Chuyến đi ổn."
+                  message: "Đánh giá đã được lưu."
+
+
+        '401':
+
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '404':
+
+          description: |
+            Không tìm thấy tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+
+    # --------------------------------------------------------
+    # CREATE RATING REQUEST
+    # --------------------------------------------------------
+
+    CreateRatingRequest:
+
+      type: object
+
+      required:
+
+        - tripId
+        - driverId
+        - score
+
+      properties:
+
+        tripId:
+
+          type: string
+
+          description: |
+            Mã chuyến đi được đánh giá.
+
+          example: "TRIP001"
+
+
+        driverId:
+
+          type: string
+
+          description: |
+            Mã tài xế được đánh giá.
+
+          example: "DRV001"
+
+
+        score:
+
+          type: integer
+
+          description: |
+            Điểm đánh giá.
+
+            Thang điểm là thiết kế API đề xuất vì SRS
+            không quy định cụ thể thang điểm.
+
+          example: 5
+
+
+        comment:
+
+          type: string
+
+          description: |
+            Nội dung nhận xét của khách hàng.
+
+            Trường này là thiết kế API đề xuất.
+
+          example: "Tài xế phục vụ tốt."
+
+
+    # --------------------------------------------------------
+    # RATING RESPONSE
+    # --------------------------------------------------------
+
+    RatingResponse:
+
+      type: object
+
+      properties:
+
+        ratingId:
+
+          type: string
+
+          description: |
+            Mã đánh giá.
+
+          example: "RATE001"
+
+
+        tripId:
+
+          type: string
+
+          description: |
+            Mã chuyến đi.
+
+          example: "TRIP001"
+
+
+        customerId:
+
+          type: string
+
+          description: |
+            Mã khách hàng thực hiện đánh giá.
+
+          example: "CUS001"
+
+
+        driverId:
+
+          type: string
+
+          description: |
+            Mã tài xế được đánh giá.
+
+          example: "DRV001"
+
+
+        score:
+
+          type: integer
+
+          description: |
+            Điểm đánh giá.
+
+          example: 5
+
+
+        comment:
+
+          type: string
+
+          description: |
+            Nội dung nhận xét.
+
+          example: "Tài xế phục vụ tốt."
+
+
+        message:
+
+          type: string
+
+          description: |
+            Thông báo kết quả xử lý.
+
+          example: "Đánh giá tài xế thành công."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: |
+            Mã lỗi.
+
+          example: "TRIP_NOT_COMPLETED"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Nội dung lỗi.
+
+          example: "Chỉ có thể đánh giá sau khi chuyến đi hoàn thành."

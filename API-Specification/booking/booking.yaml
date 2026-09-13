@@ -1,0 +1,455 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Booking API
+  version: 1.0.0
+  description: |
+    API phục vụ chức năng đặt xe của CAB System.
+
+    Chức năng chính:
+    - Nhập điểm đón
+    - Nhập điểm đến
+    - Lựa chọn loại xe
+    - Tạo yêu cầu đặt xe
+    - Tra cứu thông tin yêu cầu đặt xe
+
+    Traceability:
+    - BR01 - Đăng nhập trước khi sử dụng chức năng yêu cầu tài khoản
+    - BR02 - Nhập điểm đón, điểm đến, loại xe và gửi yêu cầu đặt xe
+    - UC05 - Đặt xe
+    - FR04 - Nhập điểm đón
+    - FR05 - Nhập điểm đến
+    - FR06 - Chọn loại xe
+    - FR07 - Tạo yêu cầu đặt xe
+    - AC04 - Tạo yêu cầu đặt xe hợp lệ
+    - AC05 - Hệ thống tiếp nhận yêu cầu và bắt đầu tìm tài xế
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Booking
+    description: Quản lý yêu cầu đặt xe
+
+
+paths:
+
+  # ==========================================================
+  # API01 - TẠO YÊU CẦU ĐẶT XE
+  # UC05 / FR04 / FR05 / FR06 / FR07 / AC04 / AC05
+  # ==========================================================
+
+  /bookings:
+
+    post:
+
+      tags:
+        - Booking
+
+      summary: Tạo yêu cầu đặt xe
+
+      description: |
+        Cho phép khách hàng tạo yêu cầu đặt xe bằng cách
+        cung cấp điểm đón, điểm đến và loại xe.
+
+        Quy trình nghiệp vụ:
+        1. Khách hàng đã đăng nhập.
+        2. Khách hàng nhập điểm đón.
+        3. Khách hàng nhập điểm đến.
+        4. Khách hàng lựa chọn loại xe.
+        5. Khách hàng gửi yêu cầu đặt xe.
+        6. Hệ thống tiếp nhận và tạo yêu cầu đặt xe.
+        7. Hệ thống chuyển sang quá trình tìm tài xế phù hợp.
+
+        Theo SRS:
+        - Actor: Khách hàng
+        - UC05: Đặt xe
+        - BR02: Tạo yêu cầu đặt xe
+        - FR04: Nhập điểm đón
+        - FR05: Nhập điểm đến
+        - FR06: Chọn loại xe
+        - FR07: Tạo yêu cầu đặt xe
+        - AC04: Tạo yêu cầu đặt xe hợp lệ
+        - AC05: Hệ thống tiếp nhận yêu cầu và bắt đầu tìm tài xế
+
+      operationId: createBooking
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+
+            example:
+              pickupLocation: "Đại học Công nghiệp TP.HCM"
+              destination: "Sân bay Tân Sơn Nhất"
+              vehicleType: "CAR"
+
+      responses:
+
+        '201':
+          description: |
+            Tạo yêu cầu đặt xe thành công.
+            Hệ thống tiếp nhận yêu cầu và chuyển sang
+            quá trình tìm tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+
+              example:
+                bookingId: "BOOK001"
+                customerId: "CUS001"
+                pickupLocation: "Đại học Công nghiệp TP.HCM"
+                destination: "Sân bay Tân Sơn Nhất"
+                vehicleType: "CAR"
+                status: "SEARCHING_DRIVER"
+                message: "Yêu cầu đặt xe đã được tiếp nhận."
+
+        '400':
+          description: |
+            Dữ liệu yêu cầu đặt xe không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_BOOKING_DATA"
+                message: "Thông tin đặt xe không hợp lệ."
+
+        '401':
+          description: |
+            Khách hàng chưa đăng nhập hoặc thông tin
+            xác thực không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+
+  # ==========================================================
+  # API02 - XEM THÔNG TIN YÊU CẦU ĐẶT XE
+  # ==========================================================
+
+  /bookings/{bookingId}:
+
+    get:
+
+      tags:
+        - Booking
+
+      summary: Xem thông tin yêu cầu đặt xe
+
+      description: |
+        Cho phép khách hàng xem thông tin của một yêu cầu
+        đặt xe đã được tạo.
+
+        Thông tin yêu cầu đặt xe bao gồm:
+        - Mã yêu cầu
+        - Mã khách hàng
+        - Điểm đón
+        - Điểm đến
+        - Loại xe
+        - Trạng thái yêu cầu
+
+      operationId: getBooking
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: bookingId
+
+          in: path
+
+          required: true
+
+          description: Mã yêu cầu đặt xe.
+
+          schema:
+            type: string
+
+          example: "BOOK001"
+
+      responses:
+
+        '200':
+          description: |
+            Lấy thông tin yêu cầu đặt xe thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+
+              example:
+                bookingId: "BOOK001"
+                customerId: "CUS001"
+                pickupLocation: "Đại học Công nghiệp TP.HCM"
+                destination: "Sân bay Tân Sơn Nhất"
+                vehicleType: "CAR"
+                status: "SEARCHING_DRIVER"
+                message: "Yêu cầu đang được tìm tài xế."
+
+        '401':
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: |
+            Không tìm thấy yêu cầu đặt xe.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "BOOKING_NOT_FOUND"
+                message: "Không tìm thấy yêu cầu đặt xe."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+      description: |
+        Token xác thực được cấp sau khi người dùng đăng nhập.
+        Khách hàng phải được xác thực trước khi tạo yêu cầu
+        đặt xe.
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+
+    # --------------------------------------------------------
+    # CREATE BOOKING REQUEST
+    # FR04 / FR05 / FR06 / FR07
+    # --------------------------------------------------------
+
+    CreateBookingRequest:
+
+      type: object
+
+      description: |
+        Dữ liệu khách hàng cung cấp để tạo yêu cầu đặt xe.
+
+      required:
+        - pickupLocation
+        - destination
+        - vehicleType
+
+      properties:
+
+        pickupLocation:
+
+          type: string
+
+          description: |
+            Điểm đón của khách hàng.
+
+            FR04:
+            Hệ thống phải cho phép khách hàng nhập điểm đón
+            khi tạo yêu cầu đặt xe.
+
+          minLength: 1
+
+          example: "Đại học Công nghiệp TP.HCM"
+
+
+        destination:
+
+          type: string
+
+          description: |
+            Điểm đến của khách hàng.
+
+            FR05:
+            Hệ thống phải cho phép khách hàng nhập điểm đến
+            khi tạo yêu cầu đặt xe.
+
+          minLength: 1
+
+          example: "Sân bay Tân Sơn Nhất"
+
+
+        vehicleType:
+
+          type: string
+
+          description: |
+            Loại xe khách hàng lựa chọn.
+
+            FR06:
+            Hệ thống phải cho phép khách hàng lựa chọn
+            loại xe trước khi gửi yêu cầu.
+
+          example: "CAR"
+
+
+    # --------------------------------------------------------
+    # BOOKING RESPONSE
+    # --------------------------------------------------------
+
+    BookingResponse:
+
+      type: object
+
+      description: |
+        Thông tin yêu cầu đặt xe được hệ thống ghi nhận.
+
+      properties:
+
+        bookingId:
+
+          type: string
+
+          description: Mã yêu cầu đặt xe.
+
+          example: "BOOK001"
+
+
+        customerId:
+
+          type: string
+
+          description: Mã khách hàng tạo yêu cầu.
+
+          example: "CUS001"
+
+
+        pickupLocation:
+
+          type: string
+
+          description: Điểm đón.
+
+          example: "Đại học Công nghiệp TP.HCM"
+
+
+        destination:
+
+          type: string
+
+          description: Điểm đến.
+
+          example: "Sân bay Tân Sơn Nhất"
+
+
+        vehicleType:
+
+          type: string
+
+          description: Loại xe được khách hàng lựa chọn.
+
+          example: "CAR"
+
+
+        status:
+
+          type: string
+
+          description: |
+            Trạng thái hiện tại của yêu cầu đặt xe.
+
+          enum:
+            - CREATED
+            - SEARCHING_DRIVER
+            - DRIVER_ASSIGNED
+            - CANCELLED
+            - COMPLETED
+
+          example: "SEARCHING_DRIVER"
+
+
+        message:
+
+          type: string
+
+          description: Thông báo kết quả xử lý.
+
+          example: "Yêu cầu đặt xe đã được tiếp nhận."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: Mã lỗi.
+
+          example: "INVALID_BOOKING_DATA"
+
+
+        message:
+
+          type: string
+
+          description: Nội dung thông báo lỗi.
+
+          example: "Thông tin đặt xe không hợp lệ."

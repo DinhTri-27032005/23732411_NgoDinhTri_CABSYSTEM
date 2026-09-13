@@ -1,0 +1,425 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Driver Location API
+  version: 1.0.0
+  description: |
+    API phục vụ việc cập nhật và tra cứu vị trí tài xế.
+
+    Mục đích nghiệp vụ:
+    - Lưu thông tin vị trí hiện tại của tài xế.
+    - Hỗ trợ hệ thống xác định tài xế gần khách hàng.
+    - Hỗ trợ dự kiến thời gian đến.
+    - Cung cấp dữ liệu vị trí cho quá trình tìm và phân công tài xế.
+
+    Traceability:
+    - BR03 - Hệ thống xác định tài xế phù hợp dựa trên vị trí,
+      trạng thái sẵn sàng và các tiêu chí vận hành.
+    - BR08 - Hệ thống hỗ trợ theo dõi và cập nhật thông tin
+      trong quá trình chuyến.
+    - FR17 - Cập nhật vị trí tài xế.
+    - AC14 - Cập nhật vị trí tài xế.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Driver Location
+    description: Quản lý vị trí tài xế
+
+
+paths:
+
+  # ==========================================================
+  # API01 - CẬP NHẬT VỊ TRÍ TÀI XẾ
+  # FR17 / BR03 / BR08 / AC14
+  # ==========================================================
+
+  /drivers/{driverId}/location:
+
+    put:
+
+      tags:
+        - Driver Location
+
+      summary: Cập nhật vị trí tài xế
+
+      description: |
+        Cho phép tài xế cập nhật vị trí hiện tại của mình.
+
+        Hệ thống lưu thông tin vị trí để:
+        - hỗ trợ tìm tài xế gần khách hàng;
+        - hỗ trợ quá trình xác định tài xế phù hợp;
+        - hỗ trợ dự kiến thời gian đến.
+
+        Theo SRS:
+        - Actor: Tài xế / Hệ thống
+        - FR17: Cập nhật vị trí tài xế
+        - BR03: Tiêu chí tìm tài xế
+        - BR08: Theo dõi và cập nhật trong quá trình chuyến
+        - AC14: Cập nhật vị trí tài xế
+
+      operationId: updateDriverLocation
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: driverId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã tài xế cần cập nhật vị trí.
+
+          schema:
+            type: string
+
+          example: "DRV001"
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/UpdateDriverLocationRequest'
+
+            example:
+              latitude: 10.8231
+              longitude: 106.6297
+
+      responses:
+
+        '200':
+          description: |
+            Cập nhật vị trí tài xế thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/DriverLocationResponse'
+
+              example:
+                driverId: "DRV001"
+                latitude: 10.8231
+                longitude: 106.6297
+                message: "Vị trí tài xế đã được cập nhật."
+
+        '400':
+          description: |
+            Thông tin vị trí không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_LOCATION"
+                message: "Thông tin vị trí không hợp lệ."
+
+        '401':
+          description: |
+            Tài xế chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "UNAUTHORIZED"
+                message: "Người dùng chưa được xác thực."
+
+        '403':
+          description: |
+            Người dùng không có quyền cập nhật vị trí
+            của tài xế được chỉ định.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FORBIDDEN"
+                message: "Không có quyền cập nhật vị trí tài xế."
+
+        '404':
+          description: |
+            Không tìm thấy tài xế.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "DRIVER_NOT_FOUND"
+                message: "Không tìm thấy tài xế."
+
+
+  # ==========================================================
+  # API02 - XEM VỊ TRÍ HIỆN TẠI CỦA TÀI XẾ
+  # Hỗ trợ tìm tài xế / theo dõi chuyến
+  # ==========================================================
+
+  /drivers/{driverId}/location:
+
+    get:
+
+      tags:
+        - Driver Location
+
+      summary: Xem vị trí hiện tại của tài xế
+
+      description: |
+        Cho phép hệ thống hoặc thành phần có quyền truy cập
+        lấy thông tin vị trí hiện tại của tài xế.
+
+        Thông tin này hỗ trợ:
+        - xác định tài xế gần khách hàng;
+        - quá trình tìm và phân công tài xế;
+        - theo dõi vị trí tài xế trong quá trình chuyến.
+
+      operationId: getDriverLocation
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: driverId
+
+          in: path
+
+          required: true
+
+          description: Mã tài xế.
+
+          schema:
+            type: string
+
+          example: "DRV001"
+
+      responses:
+
+        '200':
+          description: |
+            Lấy vị trí tài xế thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/DriverLocationResponse'
+
+              example:
+                driverId: "DRV001"
+                latitude: 10.8231
+                longitude: 106.6297
+                message: "Lấy vị trí tài xế thành công."
+
+        '401':
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: |
+            Không tìm thấy tài xế hoặc chưa có thông tin
+            vị trí được lưu.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "LOCATION_NOT_FOUND"
+                message: "Không tìm thấy thông tin vị trí tài xế."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+      description: |
+        Token xác thực của người dùng sau khi đăng nhập.
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+
+    # --------------------------------------------------------
+    # UPDATE DRIVER LOCATION REQUEST
+    # --------------------------------------------------------
+
+    UpdateDriverLocationRequest:
+
+      type: object
+
+      description: |
+        Thông tin vị trí hiện tại của tài xế.
+
+        Lưu ý:
+        SRS yêu cầu hệ thống lưu thông tin vị trí tài xế
+        nhưng không quy định cụ thể cấu trúc dữ liệu.
+        latitude và longitude là thiết kế API đề xuất.
+
+      required:
+        - latitude
+        - longitude
+
+      properties:
+
+        latitude:
+
+          type: number
+
+          format: double
+
+          description: |
+            Vĩ độ của vị trí tài xế.
+
+          example: 10.8231
+
+
+        longitude:
+
+          type: number
+
+          format: double
+
+          description: |
+            Kinh độ của vị trí tài xế.
+
+          example: 106.6297
+
+
+    # --------------------------------------------------------
+    # DRIVER LOCATION RESPONSE
+    # --------------------------------------------------------
+
+    DriverLocationResponse:
+
+      type: object
+
+      description: |
+        Thông tin vị trí hiện tại của tài xế được hệ thống lưu trữ.
+
+      properties:
+
+        driverId:
+
+          type: string
+
+          description: Mã tài xế.
+
+          example: "DRV001"
+
+
+        latitude:
+
+          type: number
+
+          format: double
+
+          description: Vĩ độ.
+
+          example: 10.8231
+
+
+        longitude:
+
+          type: number
+
+          format: double
+
+          description: Kinh độ.
+
+          example: 106.6297
+
+
+        message:
+
+          type: string
+
+          description: Thông báo kết quả xử lý.
+
+          example: "Vị trí tài xế đã được cập nhật."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: Mã lỗi.
+
+          example: "INVALID_LOCATION"
+
+
+        message:
+
+          type: string
+
+          description: Nội dung thông báo lỗi.
+
+          example: "Thông tin vị trí không hợp lệ."

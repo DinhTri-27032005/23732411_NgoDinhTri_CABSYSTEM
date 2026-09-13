@@ -1,0 +1,492 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Trip API
+  version: 1.0.0
+  description: |
+    API phục vụ việc theo dõi và thực hiện chuyến đi
+    trong CAB System.
+
+    Chức năng nghiệp vụ:
+    - Khách hàng theo dõi trạng thái chuyến.
+    - Khách hàng xem thông tin tài xế được phân công.
+    - Tài xế cập nhật trạng thái chuyến.
+    - Hệ thống lưu trạng thái hiện tại của chuyến.
+
+    Traceability:
+    - BG03 - Cải thiện khả năng theo dõi chuyến.
+    - UC08 - Theo dõi chuyến.
+    - UC09 - Thực hiện chuyến.
+    - FR21-FR28.
+    - AC12, AC13, AC15.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Trip
+    description: Quản lý và theo dõi chuyến đi
+
+
+paths:
+
+  # ==========================================================
+  # API01 - XEM THÔNG TIN CHUYẾN
+  # UC08 / FR21-FR23 / AC12
+  # ==========================================================
+
+  /trips/{tripId}:
+
+    get:
+
+      tags:
+        - Trip
+
+      summary: Xem thông tin và trạng thái chuyến
+
+      description: |
+        Cho phép khách hàng xem thông tin chuyến và trạng thái
+        hiện tại của chuyến đi.
+
+        Theo SRS:
+        - Customer có thể theo dõi trạng thái chuyến.
+        - Customer có thể xem thông tin tài xế được phân công.
+        - Hệ thống cung cấp trạng thái hiện tại của chuyến.
+
+      operationId: getTrip
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã chuyến đi.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      responses:
+
+        '200':
+
+          description: |
+            Lấy thông tin chuyến thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+
+              example:
+                tripId: "TRIP001"
+                bookingId: "BOOK001"
+                customerId: "CUS001"
+                driverId: "DRV001"
+                status: "MOVING"
+                pickupLocation: "273 An Dương Vương, TP.HCM"
+                destination: "227 Nguyễn Văn Cừ, TP.HCM"
+                message: "Lấy thông tin chuyến thành công."
+
+
+        '401':
+
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền xem chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '404':
+
+          description: |
+            Không tìm thấy chuyến đi.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_FOUND"
+                message: "Không tìm thấy chuyến đi."
+
+
+    # ========================================================
+    # API02 - CẬP NHẬT TRẠNG THÁI CHUYẾN
+    # UC09 / FR24-FR28 / AC13
+    # ========================================================
+
+    put:
+
+      tags:
+        - Trip
+
+      summary: Cập nhật trạng thái chuyến
+
+      description: |
+        Cho phép tài xế cập nhật trạng thái trong quá trình
+        thực hiện chuyến.
+
+        Theo SRS, tài xế cập nhật trạng thái chuyến theo
+        quá trình thực hiện:
+        - Đã đến điểm đón.
+        - Đã đón khách.
+        - Đang di chuyển.
+        - Hoàn thành.
+
+        Các giá trị trạng thái dưới đây là cách biểu diễn
+        API đề xuất dựa trên nghiệp vụ trong SRS.
+
+      operationId: updateTripStatus
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: tripId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã chuyến đi cần cập nhật.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/UpdateTripStatusRequest'
+
+            example:
+              status: "ARRIVED_PICKUP"
+
+
+      responses:
+
+        '200':
+
+          description: |
+            Cập nhật trạng thái chuyến thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+
+              example:
+                tripId: "TRIP001"
+                bookingId: "BOOK001"
+                customerId: "CUS001"
+                driverId: "DRV001"
+                status: "ARRIVED_PICKUP"
+                message: "Cập nhật trạng thái chuyến thành công."
+
+
+        '400':
+
+          description: |
+            Trạng thái chuyến không hợp lệ.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_TRIP_STATUS"
+                message: "Trạng thái chuyến không hợp lệ."
+
+
+        '401':
+
+          description: |
+            Tài xế chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền cập nhật chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FORBIDDEN"
+                message: "Không có quyền cập nhật trạng thái chuyến."
+
+
+        '404':
+
+          description: |
+            Không tìm thấy chuyến đi.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_FOUND"
+                message: "Không tìm thấy chuyến đi."
+
+
+        '409':
+
+          description: |
+            Không thể chuyển sang trạng thái mới.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_STATUS_TRANSITION"
+                message: "Không thể chuyển sang trạng thái mới."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # --------------------------------------------------------
+    # UPDATE TRIP STATUS REQUEST
+    # --------------------------------------------------------
+
+    UpdateTripStatusRequest:
+
+      type: object
+
+      required:
+
+        - status
+
+      properties:
+
+        status:
+
+          type: string
+
+          description: |
+            Trạng thái mới của chuyến.
+
+            Các giá trị dưới đây là thiết kế API đề xuất
+            dựa trên trạng thái nghiệp vụ trong SRS.
+
+          enum:
+
+            - ARRIVED_PICKUP
+            - PICKED_UP
+            - MOVING
+            - COMPLETED
+
+          example: "ARRIVED_PICKUP"
+
+
+    # --------------------------------------------------------
+    # TRIP RESPONSE
+    # --------------------------------------------------------
+
+    TripResponse:
+
+      type: object
+
+      properties:
+
+        tripId:
+
+          type: string
+
+          description: |
+            Mã chuyến đi.
+
+          example: "TRIP001"
+
+
+        bookingId:
+
+          type: string
+
+          description: |
+            Mã yêu cầu đặt xe tạo ra chuyến đi.
+
+          example: "BOOK001"
+
+
+        customerId:
+
+          type: string
+
+          description: |
+            Mã khách hàng.
+
+          example: "CUS001"
+
+
+        driverId:
+
+          type: string
+
+          nullable: true
+
+          description: |
+            Mã tài xế được phân công.
+
+          example: "DRV001"
+
+
+        status:
+
+          type: string
+
+          description: |
+            Trạng thái hiện tại của chuyến.
+
+          example: "MOVING"
+
+
+        pickupLocation:
+
+          type: string
+
+          description: |
+            Điểm đón khách.
+
+          example: "273 An Dương Vương, TP.HCM"
+
+
+        destination:
+
+          type: string
+
+          description: |
+            Điểm đến.
+
+          example: "227 Nguyễn Văn Cừ, TP.HCM"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Thông báo kết quả xử lý.
+
+          example: "Lấy thông tin chuyến thành công."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: |
+            Mã lỗi API.
+
+          example: "TRIP_NOT_FOUND"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Nội dung lỗi.
+
+          example: "Không tìm thấy chuyến đi."

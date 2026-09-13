@@ -1,0 +1,545 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Trip Request API
+  version: 1.0.0
+  description: |
+    API phục vụ việc xử lý yêu cầu chuyến được gửi
+    đến tài xế trong CAB System.
+
+    Chức năng nghiệp vụ:
+    - Tài xế nhận yêu cầu chuyến.
+    - Tài xế chấp nhận yêu cầu chuyến.
+    - Tài xế từ chối yêu cầu chuyến.
+    - Hệ thống tiếp tục tìm tài xế khác khi yêu cầu bị từ chối
+      hoặc tài xế không phản hồi.
+    - Hệ thống thông báo cho khách hàng khi không tìm được
+      tài xế phù hợp.
+
+    Traceability:
+    - UC07 - Chấp nhận/từ chối chuyến.
+    - FR11-FR14.
+    - AC08-AC11.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Trip Request
+    description: Xử lý yêu cầu chuyến đến tài xế
+
+
+paths:
+
+  # ==========================================================
+  # API01 - TÀI XẾ CHẤP NHẬN YÊU CẦU CHUYẾN
+  # UC07 / FR11 / AC08
+  # ==========================================================
+
+  /trip-requests/{requestId}/accept:
+
+    post:
+
+      tags:
+        - Trip Request
+
+      summary: Chấp nhận yêu cầu chuyến
+
+      description: |
+        Cho phép tài xế chấp nhận yêu cầu chuyến được
+        hệ thống gửi đến.
+
+        Sau khi tài xế chấp nhận:
+        - Hệ thống ghi nhận tài xế được phân công.
+        - Yêu cầu chuyến được chuyển sang trạng thái
+          đã được chấp nhận.
+
+        Theo SRS:
+        - FR11 - Tài xế chấp nhận chuyến.
+        - AC08 - Tài xế chấp nhận yêu cầu chuyến.
+
+      operationId: acceptTripRequest
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: requestId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu chuyến.
+
+          schema:
+            type: string
+
+          example: "REQ001"
+
+      responses:
+
+        '200':
+
+          description: |
+            Tài xế chấp nhận yêu cầu chuyến thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripRequestResponse'
+
+              example:
+                requestId: "REQ001"
+                bookingId: "BOOK001"
+                tripId: "TRIP001"
+                driverId: "DRV001"
+                status: "ACCEPTED"
+                message: "Yêu cầu chuyến đã được chấp nhận."
+
+
+        '400':
+
+          description: |
+            Yêu cầu chuyến không còn hợp lệ để chấp nhận.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_TRIP_REQUEST"
+                message: "Yêu cầu chuyến không còn hợp lệ."
+
+
+        '401':
+
+          description: |
+            Tài xế chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền xử lý yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "FORBIDDEN"
+                message: "Không có quyền xử lý yêu cầu chuyến."
+
+
+        '404':
+
+          description: |
+            Không tìm thấy yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_REQUEST_NOT_FOUND"
+                message: "Không tìm thấy yêu cầu chuyến."
+
+
+  # ==========================================================
+  # API02 - TÀI XẾ TỪ CHỐI YÊU CẦU CHUYẾN
+  # UC07 / FR12 / AC09
+  # ==========================================================
+
+  /trip-requests/{requestId}/reject:
+
+    post:
+
+      tags:
+        - Trip Request
+
+      summary: Từ chối yêu cầu chuyến
+
+      description: |
+        Cho phép tài xế từ chối yêu cầu chuyến được
+        hệ thống gửi đến.
+
+        Khi tài xế từ chối:
+        - Hệ thống ghi nhận yêu cầu bị từ chối.
+        - Hệ thống tiếp tục tìm tài xế phù hợp tiếp theo.
+
+        Theo SRS:
+        - FR12 - Tài xế từ chối chuyến.
+        - FR13 - Hệ thống tìm tài xế tiếp theo.
+        - AC09 - Khi tài xế từ chối, hệ thống tiếp tục tìm
+          tài xế khác.
+
+      operationId: rejectTripRequest
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: requestId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu chuyến.
+
+          schema:
+            type: string
+
+          example: "REQ001"
+
+      responses:
+
+        '200':
+
+          description: |
+            Từ chối yêu cầu chuyến thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripRequestResponse'
+
+              example:
+                requestId: "REQ001"
+                bookingId: "BOOK001"
+                tripId: null
+                driverId: "DRV001"
+                status: "REJECTED"
+                message: "Yêu cầu chuyến đã bị từ chối. Hệ thống tiếp tục tìm tài xế."
+
+
+        '400':
+
+          description: |
+            Yêu cầu chuyến không còn hợp lệ để từ chối.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_TRIP_REQUEST"
+                message: "Yêu cầu chuyến không còn hợp lệ."
+
+
+        '401':
+
+          description: |
+            Tài xế chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền xử lý yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '404':
+
+          description: |
+            Không tìm thấy yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_REQUEST_NOT_FOUND"
+                message: "Không tìm thấy yêu cầu chuyến."
+
+
+  # ==========================================================
+  # API03 - XEM THÔNG TIN YÊU CẦU CHUYẾN
+  # ==========================================================
+  # API này là thiết kế bổ sung để hỗ trợ Driver xem
+  # thông tin yêu cầu trước khi accept/reject.
+  # ==========================================================
+
+  /trip-requests/{requestId}:
+
+    get:
+
+      tags:
+        - Trip Request
+
+      summary: Xem thông tin yêu cầu chuyến
+
+      description: |
+        Cho phép tài xế xem thông tin của yêu cầu chuyến
+        được gửi đến trước khi quyết định chấp nhận
+        hoặc từ chối.
+
+        Endpoint này là thiết kế API bổ sung.
+        SRS không quy định riêng một API GET để xem
+        chi tiết yêu cầu chuyến.
+
+      operationId: getTripRequest
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: requestId
+
+          in: path
+
+          required: true
+
+          description: |
+            Mã yêu cầu chuyến.
+
+          schema:
+            type: string
+
+          example: "REQ001"
+
+      responses:
+
+        '200':
+
+          description: |
+            Lấy thông tin yêu cầu chuyến thành công.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/TripRequestResponse'
+
+              example:
+                requestId: "REQ001"
+                bookingId: "BOOK001"
+                tripId: null
+                driverId: "DRV001"
+                status: "PENDING"
+                message: "Lấy thông tin yêu cầu chuyến thành công."
+
+
+        '401':
+
+          description: |
+            Người dùng chưa được xác thực.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '403':
+
+          description: |
+            Người dùng không có quyền xem yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+        '404':
+
+          description: |
+            Không tìm thấy yêu cầu chuyến.
+
+          content:
+
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # --------------------------------------------------------
+    # TRIP REQUEST RESPONSE
+    # --------------------------------------------------------
+
+    TripRequestResponse:
+
+      type: object
+
+      properties:
+
+        requestId:
+
+          type: string
+
+          description: |
+            Mã yêu cầu chuyến.
+
+          example: "REQ001"
+
+
+        bookingId:
+
+          type: string
+
+          description: |
+            Mã yêu cầu đặt xe liên quan.
+
+          example: "BOOK001"
+
+
+        tripId:
+
+          type: string
+
+          nullable: true
+
+          description: |
+            Mã chuyến được tạo sau khi yêu cầu được chấp nhận.
+
+          example: "TRIP001"
+
+
+        driverId:
+
+          type: string
+
+          description: |
+            Mã tài xế nhận yêu cầu chuyến.
+
+          example: "DRV001"
+
+
+        status:
+
+          type: string
+
+          description: |
+            Trạng thái xử lý yêu cầu chuyến.
+
+            Các giá trị là thiết kế API đề xuất
+            dựa trên nghiệp vụ trong SRS.
+
+          enum:
+
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+
+          example: "ACCEPTED"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Thông báo kết quả xử lý.
+
+          example: "Yêu cầu chuyến đã được chấp nhận."
+
+
+    # --------------------------------------------------------
+    # ERROR RESPONSE
+    # --------------------------------------------------------
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+
+          type: string
+
+          description: |
+            Mã lỗi API.
+
+          example: "TRIP_REQUEST_NOT_FOUND"
+
+
+        message:
+
+          type: string
+
+          description: |
+            Nội dung lỗi.
+
+          example: "Không tìm thấy yêu cầu chuyến."

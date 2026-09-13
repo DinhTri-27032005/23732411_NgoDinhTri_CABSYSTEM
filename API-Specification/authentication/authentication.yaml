@@ -1,0 +1,505 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Authentication API
+  description: |
+    API phục vụ các chức năng xác thực và quản lý thông tin
+    tài khoản của CAB System.
+
+    Phạm vi:
+    - Đăng ký tài khoản khách hàng
+    - Đăng nhập khách hàng và tài xế
+    - Cập nhật thông tin cá nhân/hồ sơ
+
+    Traceability:
+    - UC01 - Đăng ký tài khoản
+    - UC02 - Đăng nhập
+    - UC03 - Cập nhật thông tin
+    - FR01 - FR03
+    - BR01
+    - BRL01
+    - NFR05 - NFR07
+    - AC01 - AC03
+
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+
+tags:
+  - name: Authentication
+    description: Xác thực tài khoản
+
+  - name: Profile
+    description: Quản lý thông tin cá nhân và hồ sơ
+
+
+paths:
+
+  # ==========================================================
+  # API01 - ĐĂNG KÝ TÀI KHOẢN
+  # FR01 / UC01 / AC01
+  # ==========================================================
+
+  /auth/register:
+
+    post:
+      tags:
+        - Authentication
+
+      summary: Đăng ký tài khoản
+
+      description: |
+        Cho phép khách hàng đăng ký tài khoản để sử dụng
+        các chức năng yêu cầu tài khoản của CAB System.
+
+        Theo SRS:
+        - Actor: Khách hàng
+        - FR01: Đăng ký tài khoản
+        - UC01: Đăng ký tài khoản
+        - AC01: Đăng ký thành công và hệ thống tạo tài khoản.
+
+      operationId: registerAccount
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+
+            example:
+              fullName: "Nguyễn Văn A"
+              phoneNumber: "0901234567"
+              email: "nguyenvana@example.com"
+              password: "Password123"
+
+      responses:
+
+        '201':
+          description: Đăng ký tài khoản thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+
+              example:
+                userId: "CUS001"
+                role: "CUSTOMER"
+                fullName: "Nguyễn Văn A"
+                phoneNumber: "0901234567"
+                email: "nguyenvana@example.com"
+                message: "Đăng ký tài khoản thành công."
+
+        '400':
+          description: Dữ liệu đăng ký không hợp lệ
+
+        '409':
+          description: Thông tin đăng ký đã tồn tại
+
+
+  # ==========================================================
+  # API02 - ĐĂNG NHẬP
+  # FR02 / UC02 / AC02
+  # ==========================================================
+
+  /auth/login:
+
+    post:
+      tags:
+        - Authentication
+
+      summary: Đăng nhập
+
+      description: |
+        Cho phép khách hàng hoặc tài xế đăng nhập vào CAB System.
+
+        Người dùng phải được xác thực trước khi sử dụng
+        các chức năng yêu cầu tài khoản.
+
+        Theo SRS:
+        - Actor: Khách hàng / Tài xế
+        - FR02: Đăng nhập
+        - UC02: Đăng nhập
+        - BRL01: Xác thực người dùng
+        - NFR06: Xác thực
+        - AC02: Đăng nhập bằng thông tin hợp lệ.
+
+      operationId: login
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+
+            example:
+              username: "0901234567"
+              password: "Password123"
+
+      responses:
+
+        '200':
+          description: Đăng nhập thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+              example:
+                userId: "CUS001"
+                role: "CUSTOMER"
+                accessToken: "eyJhbGciOiJIUzI1NiIs..."
+                message: "Đăng nhập thành công."
+
+        '400':
+          description: Dữ liệu đăng nhập không hợp lệ
+
+        '401':
+          description: Thông tin đăng nhập không chính xác
+
+        '403':
+          description: Tài khoản không được phép truy cập
+
+
+  # ==========================================================
+  # API03 - CẬP NHẬT THÔNG TIN
+  # FR03 / UC03 / AC03
+  # ==========================================================
+
+  /users/{userId}/profile:
+
+    put:
+      tags:
+        - Profile
+
+      summary: Cập nhật thông tin cá nhân/hồ sơ
+
+      description: |
+        Cho phép khách hàng cập nhật thông tin cá nhân
+        và tài xế cập nhật thông tin hồ sơ.
+
+        Người dùng phải được xác thực trước khi thực hiện
+        chức năng này.
+
+        Theo SRS:
+        - Actor: Khách hàng / Tài xế
+        - FR03: Cập nhật thông tin
+        - UC03: Cập nhật thông tin cá nhân / hồ sơ
+        - AC03: Hệ thống ghi nhận thông tin cập nhật.
+
+      operationId: updateProfile
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: userId
+          in: path
+          required: true
+
+          description: |
+            Mã người dùng cần cập nhật thông tin.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+
+            example:
+              fullName: "Nguyễn Văn A"
+              phoneNumber: "0901234567"
+              email: "nguyenvana@example.com"
+
+      responses:
+
+        '200':
+          description: Cập nhật thông tin thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+
+              example:
+                userId: "CUS001"
+                role: "CUSTOMER"
+                fullName: "Nguyễn Văn A"
+                phoneNumber: "0901234567"
+                email: "nguyenvana@example.com"
+                message: "Cập nhật thông tin thành công."
+
+        '400':
+          description: Dữ liệu cập nhật không hợp lệ
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+        '403':
+          description: Người dùng không có quyền cập nhật thông tin này
+
+        '404':
+          description: Không tìm thấy người dùng
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+      description: |
+        Token xác thực được sử dụng để truy cập
+        các chức năng yêu cầu tài khoản.
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # --------------------------------------------------------
+    # REGISTER REQUEST
+    # --------------------------------------------------------
+
+    RegisterRequest:
+
+      type: object
+
+      required:
+        - fullName
+        - phoneNumber
+        - password
+
+      properties:
+
+        fullName:
+          type: string
+          description: Họ và tên khách hàng
+          example: "Nguyễn Văn A"
+
+        phoneNumber:
+          type: string
+          description: Số điện thoại đăng ký
+          example: "0901234567"
+
+        email:
+          type: string
+          format: email
+          description: Email của khách hàng
+          example: "nguyenvana@example.com"
+
+        password:
+          type: string
+          format: password
+          description: Mật khẩu tài khoản
+          example: "Password123"
+
+
+    # --------------------------------------------------------
+    # REGISTER RESPONSE
+    # --------------------------------------------------------
+
+    RegisterResponse:
+
+      type: object
+
+      properties:
+
+        userId:
+          type: string
+          description: Mã tài khoản được tạo
+          example: "CUS001"
+
+        role:
+          type: string
+          description: Vai trò tài khoản
+          enum:
+            - CUSTOMER
+          example: "CUSTOMER"
+
+        fullName:
+          type: string
+          example: "Nguyễn Văn A"
+
+        phoneNumber:
+          type: string
+          example: "0901234567"
+
+        email:
+          type: string
+          format: email
+          example: "nguyenvana@example.com"
+
+        message:
+          type: string
+          example: "Đăng ký tài khoản thành công."
+
+
+    # --------------------------------------------------------
+    # LOGIN REQUEST
+    # --------------------------------------------------------
+
+    LoginRequest:
+
+      type: object
+
+      required:
+        - username
+        - password
+
+      properties:
+
+        username:
+          type: string
+          description: |
+            Thông tin định danh được sử dụng để đăng nhập.
+
+          example: "0901234567"
+
+        password:
+          type: string
+          format: password
+          description: Mật khẩu tài khoản
+
+          example: "Password123"
+
+
+    # --------------------------------------------------------
+    # LOGIN RESPONSE
+    # --------------------------------------------------------
+
+    LoginResponse:
+
+      type: object
+
+      properties:
+
+        userId:
+          type: string
+          description: Mã người dùng
+          example: "CUS001"
+
+        role:
+          type: string
+          description: Vai trò người dùng
+
+          enum:
+            - CUSTOMER
+            - DRIVER
+            - OPERATION
+            - MANAGEMENT
+
+          example: "CUSTOMER"
+
+        accessToken:
+          type: string
+          description: Token xác thực
+
+          example: "eyJhbGciOiJIUzI1NiIs..."
+
+        message:
+          type: string
+          example: "Đăng nhập thành công."
+
+
+    # --------------------------------------------------------
+    # UPDATE PROFILE REQUEST
+    # --------------------------------------------------------
+
+    UpdateProfileRequest:
+
+      type: object
+
+      properties:
+
+        fullName:
+          type: string
+          description: Họ và tên
+          example: "Nguyễn Văn A"
+
+        phoneNumber:
+          type: string
+          description: Số điện thoại
+          example: "0901234567"
+
+        email:
+          type: string
+          format: email
+          description: Email
+          example: "nguyenvana@example.com"
+
+
+    # --------------------------------------------------------
+    # PROFILE RESPONSE
+    # --------------------------------------------------------
+
+    ProfileResponse:
+
+      type: object
+
+      properties:
+
+        userId:
+          type: string
+          example: "CUS001"
+
+        role:
+          type: string
+
+          enum:
+            - CUSTOMER
+            - DRIVER
+
+          example: "CUSTOMER"
+
+        fullName:
+          type: string
+          example: "Nguyễn Văn A"
+
+        phoneNumber:
+          type: string
+          example: "0901234567"
+
+        email:
+          type: string
+          format: email
+          example: "nguyenvana@example.com"
+
+        message:
+          type: string
+          example: "Cập nhật thông tin thành công."
