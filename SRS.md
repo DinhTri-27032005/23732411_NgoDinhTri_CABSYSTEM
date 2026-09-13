@@ -1,13 +1,14 @@
 ## 1. Xác định Stakeholder
 
-| **STT** | **Stakeholder**                                                   | **Vai trò / Nhu cầu**                                                                                                    |
-| :-----: | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-|  **1**  | **Khách hàng (Customer)**                                         | Sử dụng hệ thống để đăng ký, đặt xe, theo dõi chuyến, thanh toán, xem lịch sử và đánh giá tài xế.                        |
-|  **2**  | **Tài xế (Driver)**                                               | Sử dụng hệ thống để quản lý hồ sơ, phương tiện, trạng thái hoạt động, nhận/từ chối chuyến và cập nhật trạng thái chuyến. |
-|  **3**  | **Nhân viên vận hành (Operation Staff)**                          | Quản lý khách hàng, tài xế, phương tiện, chuyến đi, giao dịch và xử lý các trường hợp lỗi.                               |
-|  **4**  | **Ban lãnh đạo (Management)**                                     | Theo dõi báo cáo về số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của tài xế.            |
-|  **5**  | **Nhà cung cấp thanh toán bên ngoài (External Payment Provider)** | Cung cấp dịch vụ thanh toán điện tử cho CAB System.                                                                      |
-|  **6**  | **Nhà cung cấp dịch vụ thông báo (Notification Provider)**        | Cung cấp kênh gửi thông báo cho khách hàng và tài xế.                                                                    |
+| STT | Stakeholder | Vai trò | Mối quan tâm / Nhu cầu | Mức độ ảnh hưởng |
+|---|---|---|---|---|
+| 1 | **Customer (Khách hàng)** | Người sử dụng dịch vụ đặt xe | Đặt xe nhanh chóng, theo dõi chuyến đi, biết thông tin tài xế, thanh toán và đánh giá sau chuyến | Cao |
+| 2 | **Driver (Tài xế)** | Người cung cấp dịch vụ vận chuyển | Nhận chuyến phù hợp, cập nhật trạng thái chuyến, quản lý hồ sơ/phương tiện và chia sẻ vị trí | Cao |
+| 3 | **Operation Staff (Nhân viên vận hành)** | Quản lý và giám sát hoạt động hệ thống | Quản lý khách hàng, tài xế, phương tiện, chuyến đi; xử lý sự cố và tra cứu giao dịch | Cao |
+| 4 | **Management (Ban lãnh đạo)** | Quản lý hoạt động kinh doanh | Theo dõi số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả tài xế | Cao |
+| 5 | **Payment Provider** | Hệ thống thanh toán bên ngoài | Xử lý các giao dịch thanh toán điện tử | Trung bình/Cao |
+| 6 | **Notification Provider** | Nhà cung cấp dịch vụ thông báo | Gửi thông báo đến khách hàng và tài xế; hỗ trợ mở rộng các kênh thông báo | Trung bình |
+
 ## 2.Ma trận Stakeholder – Mức độ ảnh hưởng
 <img width="544" height="563" alt="image" src="https://github.com/user-attachments/assets/0d232130-d913-457c-9184-d4ae14e5657b" />
 
@@ -82,6 +83,11 @@ flowchart LR
 | **BR11** | Hệ thống phải tích hợp với nhà cung cấp thanh toán bên ngoài khi khách hàng sử dụng phương thức thanh toán điện tử. | BS08 |
 | **BR12** | Hệ thống không được lưu trực tiếp thông tin nhạy cảm của thẻ hoặc tài khoản thanh toán. | BS08 |
 | **BR13** | Khi thanh toán điện tử thất bại, hệ thống phải thông báo cho khách hàng và cho phép xử lý lại theo chính sách của doanh nghiệp. | BS09 |
+| **BR14** | Hệ thống phải hỗ trợ gửi thông báo cho khách hàng và tài xế khi phát sinh các sự kiện liên quan đến đặt xe, chuyến đi và thanh toán. | BS10 |
+| **BR15** | Hệ thống phải cho phép khách hàng xem lịch sử các chuyến đã thực hiện và thông tin liên quan đến chuyến. | BS13 |
+| **BR16** | Hệ thống phải cho phép khách hàng đánh giá tài xế sau khi chuyến đi hoàn thành. | BS14 |
+| **BR17** | Hệ thống phải hỗ trợ nhân viên vận hành quản lý khách hàng, tài xế, phương tiện, chuyến đi, giao dịch và xử lý các trường hợp chuyến bị lỗi. | BS11 |
+| **BR18** | Hệ thống phải cung cấp báo cáo về số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của tài xế cho ban lãnh đạo. | BS12 |
 
 # 5 Business Scenarios – Tình huống nghiệp vụ
 
@@ -99,6 +105,8 @@ flowchart LR
 | **BS10** | **Gửi thông báo** | Hệ thống / Notification Provider | Hệ thống phát sinh các sự kiện liên quan đến đặt xe, chuyến đi hoặc thanh toán. | Thông báo được gửi đến khách hàng hoặc tài xế tương ứng. |
 | **BS11** | **Nhân viên vận hành xử lý hoạt động** | Nhân viên vận hành | Nhân viên vận hành quản lý khách hàng, tài xế, phương tiện, chuyến đi và giao dịch; đồng thời xử lý các trường hợp chuyến bị lỗi. | Hoạt động vận hành được theo dõi và hỗ trợ thông qua hệ thống. |
 | **BS12** | **Ban lãnh đạo theo dõi báo cáo** | Ban lãnh đạo | Ban lãnh đạo theo dõi số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của tài xế. | Các thông tin báo cáo được cung cấp để theo dõi hoạt động hệ thống. |
+| **BS13** | **Khách hàng xem lịch sử chuyến** | Khách hàng | Khách hàng truy cập chức năng lịch sử để xem các chuyến đã thực hiện và thông tin liên quan. | Lịch sử chuyến được hiển thị đầy đủ cho khách hàng. |
+| **BS14** | **Khách hàng đánh giá tài xế** | Khách hàng | Sau khi chuyến hoàn thành, khách hàng thực hiện đánh giá tài xế. | Đánh giá của khách hàng được hệ thống ghi nhận. |
 
 # 6. Xây dựng mô hình – Quy trình nghiệp vụ
 
@@ -190,6 +198,16 @@ flowchart TD
 | **FR21** | Tích hợp thanh toán | Hệ thống phải tích hợp với nhà cung cấp thanh toán bên ngoài để xử lý thanh toán điện tử. | Hệ thống / Payment Provider | BR11 |
 | **FR22** | Bảo vệ dữ liệu thanh toán | Hệ thống không được lưu trực tiếp thông tin nhạy cảm của thẻ hoặc tài khoản thanh toán. | Hệ thống | BR12 |
 | **FR23** | Xử lý thanh toán thất bại | Khi giao dịch thanh toán điện tử thất bại, hệ thống phải thông báo cho khách hàng và cho phép xử lý lại theo chính sách của doanh nghiệp. | Hệ thống | BR13 |
+| **FR24** | **Gửi thông báo** | Hệ thống phải gửi thông báo cho khách hàng và tài xế khi có các sự kiện liên quan đến đặt xe, chuyến đi và thanh toán. | Hệ thống | BR14 |
+| **FR25** | **Xem lịch sử chuyến** | Hệ thống phải cho phép khách hàng xem lịch sử các chuyến đã thực hiện và thông tin liên quan đến chuyến. | Khách hàng | BR15 |
+| **FR26** | **Đánh giá tài xế** | Hệ thống phải cho phép khách hàng đánh giá tài xế sau khi chuyến đi hoàn thành. | Khách hàng | BR16 |
+| **FR27** | **Quản lý phương tiện** | Hệ thống phải cho phép nhân viên vận hành xem và cập nhật thông tin phương tiện được sử dụng trong hệ thống. | Nhân viên vận hành | BR17 |
+| **FR28** | **Quản lý khách hàng** | Hệ thống phải cho phép nhân viên vận hành xem và quản lý thông tin khách hàng. | Nhân viên vận hành | BR17 |
+| **FR29** | **Quản lý tài xế** | Hệ thống phải cho phép nhân viên vận hành xem và quản lý thông tin tài xế. | Nhân viên vận hành | BR17 |
+| **FR30** | **Quản lý chuyến đi** | Hệ thống phải cho phép nhân viên vận hành theo dõi và quản lý các chuyến đi trong hệ thống. | Nhân viên vận hành | BR17 |
+| **FR31** | **Tra cứu giao dịch** | Hệ thống phải cho phép nhân viên vận hành tra cứu thông tin các giao dịch thanh toán. | Nhân viên vận hành | BR17 |
+| **FR32** | **Xử lý chuyến lỗi** | Hệ thống phải cho phép nhân viên vận hành tiếp nhận và xử lý các trường hợp chuyến đi phát sinh lỗi. | Nhân viên vận hành | BR17 |
+| **FR33** | **Xem báo cáo hoạt động** | Hệ thống phải cho phép ban lãnh đạo xem báo cáo về số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của tài xế. | Ban lãnh đạo | BR18 |
 # 8. Business Rules và Business Exceptions
 
 ## 8.1. Business Rules – Quy định nghiệp vụ
@@ -378,9 +396,6 @@ Thiết kế Use Case được xây dựng dựa trên các Functional Requireme
 
 ---
 
-## 12.4. Use Case Diagram tổng quát
-
-## 12.4. Use Case Diagram tổng quát
 
 ## 12.4. Use Case Diagram tổng quát
 
@@ -623,26 +638,31 @@ Trong đó **UC06 – Tìm và phân công tài xế** là Use Case có nhiều 
 
 ## 12.8. Traceability giữa Use Case và Functional Requirements
 
+## 12.8. Traceability giữa Use Case và Functional Requirements
+
 | **Use Case** | **Functional Requirements liên quan** |
 |---|---|
-| **UC01 – Đăng ký tài khoản** | FR01, FR04 |
-| **UC02 – Đăng nhập** | FR02, FR03 |
-| **UC03 – Cập nhật thông tin** | FR03, FR05 |
-| **UC04 – Quản lý phương tiện** | FR06 |
-| **UC05 – Đặt xe** | FR07–FR12 |
-| **UC06 – Tìm và phân công tài xế** | FR13–FR14, FR18–FR20, FR22 |
-| **UC07 – Chấp nhận / từ chối chuyến** | FR15–FR17 |
-| **UC08 – Theo dõi chuyến** | FR21–FR23 |
-| **UC09 – Thực hiện chuyến** | FR24–FR28 |
-| **UC10 – Tính cước** | FR29 |
-| **UC11 – Thanh toán** | FR30–FR31 |
-| **UC12 – Xử lý thanh toán điện tử** | FR32–FR35 |
-| **UC13 – Gửi thông báo** | FR36–FR42 |
-| **UC14 – Xem lịch sử chuyến** | FR43–FR44 |
-| **UC15 – Đánh giá tài xế** | FR45 |
-| **UC16–UC20 – Vận hành** | FR46–FR55 |
-| **UC21 – Xem báo cáo** | FR56–FR60 |
-
+| **UC01 – Đăng ký tài khoản** | FR01 |
+| **UC02 – Đăng nhập** | FR02 |
+| **UC03 – Cập nhật thông tin** | FR03 |
+| **UC04 – Quản lý phương tiện** | FR27 |
+| **UC05 – Đặt xe** | FR04–FR07 |
+| **UC06 – Tìm và phân công tài xế** | FR08–FR10, FR13–FR14, FR17 |
+| **UC07 – Chấp nhận / từ chối chuyến** | FR11–FR12 |
+| **UC08 – Theo dõi chuyến** | FR16–FR17 |
+| **UC09 – Thực hiện chuyến** | FR15 |
+| **UC10 – Tính cước** | FR18 |
+| **UC11 – Thanh toán** | FR19–FR20 |
+| **UC12 – Xử lý thanh toán điện tử** | FR21–FR23 |
+| **UC13 – Gửi thông báo** | FR14, FR24 |
+| **UC14 – Xem lịch sử chuyến** | FR25 |
+| **UC15 – Đánh giá tài xế** | FR26 |
+| **UC16 – Quản lý khách hàng** | FR28 |
+| **UC17 – Quản lý tài xế** | FR29 |
+| **UC18 – Quản lý phương tiện** | FR27 |
+| **UC19 – Quản lý chuyến đi** | FR30 |
+| **UC20 – Tra cứu giao dịch / Xử lý chuyến lỗi** | FR31–FR32 |
+| **UC21 – Xem báo cáo** | FR33 |
 ---
 
 ## 12.9. Phạm vi Use Case
@@ -831,6 +851,3 @@ Test Case
 | **Hỗ trợ nghiệm thu** | Khi thực hiện nghiệm thu, có thể truy từ AC về yêu cầu gốc để xác định chính xác phạm vi cần kiểm tra. |
 | **Phục vụ kiểm thử** | Test Case được xây dựng dựa trên AC, đồng thời có thể truy ngược để xác định Test Case đang kiểm tra yêu cầu nào. |
 | **Kiểm soát phạm vi** | Giúp BA và nhóm phát triển kiểm soát phạm vi, hạn chế việc thêm chức năng không xuất phát từ yêu cầu của khách hàng. |
-
-
-
