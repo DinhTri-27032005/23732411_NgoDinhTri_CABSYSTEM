@@ -1,0 +1,692 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Notification API
+  version: 1.0.0
+  description: |
+    API phục vụ việc gửi và quản lý thông báo
+    trong hệ thống CAB System.
+
+    Phạm vi:
+    - Gửi thông báo cho khách hàng hoặc tài xế.
+    - Xem thông báo.
+    - Cập nhật trạng thái thông báo.
+    - Xóa thông báo.
+
+    Traceability:
+    - UC13 - Gửi thông báo.
+    - FR - Chức năng thông báo.
+    - AC22 - Thông báo cho người dùng.
+    - AC23 - Thông báo trạng thái liên quan đến chuyến đi.
+
+    Lưu ý:
+    GET, PUT và DELETE là thiết kế API bổ sung
+    để hỗ trợ quản lý thông báo.
+    SRS tập trung vào chức năng gửi thông báo.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Notification
+    description: Quản lý thông báo
+
+
+paths:
+
+  # ==========================================================
+  # API01 - GỬI THÔNG BÁO
+  # POST /notifications
+  # UC13 / AC22 / AC23
+  # ==========================================================
+
+  /notifications:
+
+    post:
+
+      tags:
+        - Notification
+
+      summary: Gửi thông báo
+
+      description: |
+        Cho phép hệ thống tạo và gửi thông báo
+        đến khách hàng hoặc tài xế.
+
+        Thông báo có thể được sử dụng để thông báo:
+        - Trạng thái chuyến đi.
+        - Kết quả tìm tài xế.
+        - Tình trạng yêu cầu chuyến đi.
+        - Trạng thái thanh toán.
+        - Các thông tin cần thiết khác.
+
+        Theo SRS:
+        - UC13: Gửi thông báo.
+        - AC22: Thông báo cho người dùng.
+        - AC23: Thông báo trạng thái liên quan đến chuyến đi.
+
+      operationId: sendNotification
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+
+            example:
+              recipientId: "CUS001"
+              recipientType: "CUSTOMER"
+              tripId: "TRIP001"
+              type: "TRIP_STATUS"
+              title: "Cập nhật chuyến đi"
+              message: "Tài xế đã đến điểm đón."
+
+      responses:
+
+        '201':
+          description: Gửi thông báo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+
+              example:
+                notificationId: "NOTI001"
+                recipientId: "CUS001"
+                recipientType: "CUSTOMER"
+                tripId: "TRIP001"
+                type: "TRIP_STATUS"
+                title: "Cập nhật chuyến đi"
+                message: "Tài xế đã đến điểm đón."
+                status: "UNREAD"
+
+        '400':
+          description: Dữ liệu thông báo không hợp lệ
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_NOTIFICATION_DATA"
+                message: "Dữ liệu thông báo không hợp lệ."
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy người nhận
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "RECIPIENT_NOT_FOUND"
+                message: "Không tìm thấy người nhận."
+
+
+  # ==========================================================
+  # API02 - LẤY DANH SÁCH THÔNG BÁO
+  # GET /notifications
+  # API DESIGN BỔ SUNG
+  # ==========================================================
+
+    get:
+
+      tags:
+        - Notification
+
+      summary: Lấy danh sách thông báo
+
+      description: |
+        Cho phép người dùng đã xác thực xem danh sách
+        các thông báo của mình.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng phương thức GET
+        cho thông báo.
+
+      operationId: getNotifications
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: recipientId
+          in: query
+          required: true
+
+          description: |
+            Mã người nhận thông báo.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+        - name: status
+          in: query
+          required: false
+
+          description: |
+            Lọc thông báo theo trạng thái.
+
+          schema:
+            type: string
+
+            enum:
+              - UNREAD
+              - READ
+
+          example: "UNREAD"
+
+        - name: page
+          in: query
+          required: false
+
+          description: Số trang.
+
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+
+          example: 1
+
+        - name: size
+          in: query
+          required: false
+
+          description: Số lượng thông báo trên mỗi trang.
+
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+          example: 20
+
+      responses:
+
+        '200':
+          description: Lấy danh sách thông báo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy người nhận
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # ==========================================================
+  # API03 - CẬP NHẬT THÔNG BÁO
+  # PUT /notifications/{notificationId}
+  # API DESIGN BỔ SUNG
+  # ==========================================================
+
+  /notifications/{notificationId}:
+
+    put:
+
+      tags:
+        - Notification
+
+      summary: Cập nhật trạng thái thông báo
+
+      description: |
+        Cho phép người dùng cập nhật trạng thái
+        của thông báo.
+
+        Ví dụ:
+        - Đánh dấu thông báo là đã đọc.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng phương thức PUT
+        cho thông báo.
+
+      operationId: updateNotification
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: notificationId
+          in: path
+          required: true
+
+          description: Mã thông báo.
+
+          schema:
+            type: string
+
+          example: "NOTI001"
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationRequest'
+
+            example:
+              status: "READ"
+
+      responses:
+
+        '200':
+          description: Cập nhật thông báo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+
+              example:
+                notificationId: "NOTI001"
+                recipientId: "CUS001"
+                recipientType: "CUSTOMER"
+                tripId: "TRIP001"
+                type: "TRIP_STATUS"
+                title: "Cập nhật chuyến đi"
+                message: "Tài xế đã đến điểm đón."
+                status: "READ"
+
+        '400':
+          description: Trạng thái thông báo không hợp lệ
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền cập nhật thông báo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy thông báo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "NOTIFICATION_NOT_FOUND"
+                message: "Không tìm thấy thông báo."
+
+
+  # ==========================================================
+  # API04 - XÓA THÔNG BÁO
+  # DELETE /notifications/{notificationId}
+  # API DESIGN BỔ SUNG
+  # ==========================================================
+
+    delete:
+
+      tags:
+        - Notification
+
+      summary: Xóa thông báo
+
+      description: |
+        Cho phép người dùng xóa một thông báo khỏi danh sách
+        thông báo của mình.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng phương thức DELETE
+        cho thông báo.
+
+      operationId: deleteNotification
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: notificationId
+          in: path
+          required: true
+
+          description: Mã thông báo cần xóa.
+
+          schema:
+            type: string
+
+          example: "NOTI001"
+
+      responses:
+
+        '204':
+          description: Xóa thông báo thành công
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền xóa thông báo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy thông báo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "NOTIFICATION_NOT_FOUND"
+                message: "Không tìm thấy thông báo."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+      description: |
+        JWT token được sử dụng để xác thực người dùng
+        khi truy cập các API yêu cầu đăng nhập.
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # ========================================================
+    # NOTIFICATION REQUEST
+    # ========================================================
+
+    NotificationRequest:
+
+      type: object
+
+      required:
+        - recipientId
+        - recipientType
+        - type
+        - title
+        - message
+
+      properties:
+
+        recipientId:
+          type: string
+          description: Mã người nhận thông báo.
+          example: "CUS001"
+
+        recipientType:
+          type: string
+          description: Loại người nhận.
+
+          enum:
+            - CUSTOMER
+            - DRIVER
+
+          example: "CUSTOMER"
+
+        tripId:
+          type: string
+          nullable: true
+          description: |
+            Mã chuyến đi liên quan đến thông báo,
+            nếu có.
+
+          example: "TRIP001"
+
+        type:
+          type: string
+          description: Loại thông báo.
+
+          enum:
+            - TRIP_STATUS
+            - DRIVER_ASSIGNED
+            - NO_DRIVER
+            - PAYMENT
+            - SYSTEM
+
+          example: "TRIP_STATUS"
+
+        title:
+          type: string
+          description: Tiêu đề thông báo.
+          example: "Cập nhật chuyến đi"
+
+        message:
+          type: string
+          description: Nội dung thông báo.
+          example: "Tài xế đã đến điểm đón."
+
+
+    # ========================================================
+    # UPDATE NOTIFICATION REQUEST
+    # ========================================================
+
+    UpdateNotificationRequest:
+
+      type: object
+
+      required:
+        - status
+
+      properties:
+
+        status:
+          type: string
+          description: Trạng thái mới của thông báo.
+
+          enum:
+            - READ
+            - UNREAD
+
+          example: "READ"
+
+
+    # ========================================================
+    # NOTIFICATION RESPONSE
+    # ========================================================
+
+    NotificationResponse:
+
+      type: object
+
+      properties:
+
+        notificationId:
+          type: string
+          description: Mã thông báo.
+          example: "NOTI001"
+
+        recipientId:
+          type: string
+          description: Mã người nhận.
+          example: "CUS001"
+
+        recipientType:
+          type: string
+          description: Loại người nhận.
+
+          enum:
+            - CUSTOMER
+            - DRIVER
+
+          example: "CUSTOMER"
+
+        tripId:
+          type: string
+          nullable: true
+          description: Mã chuyến đi liên quan.
+          example: "TRIP001"
+
+        type:
+          type: string
+          description: Loại thông báo.
+
+          enum:
+            - TRIP_STATUS
+            - DRIVER_ASSIGNED
+            - NO_DRIVER
+            - PAYMENT
+            - SYSTEM
+
+          example: "TRIP_STATUS"
+
+        title:
+          type: string
+          description: Tiêu đề thông báo.
+          example: "Cập nhật chuyến đi"
+
+        message:
+          type: string
+          description: Nội dung thông báo.
+          example: "Tài xế đã đến điểm đón."
+
+        status:
+          type: string
+          description: Trạng thái thông báo.
+
+          enum:
+            - READ
+            - UNREAD
+
+          example: "UNREAD"
+
+
+    # ========================================================
+    # NOTIFICATION LIST RESPONSE
+    # ========================================================
+
+    NotificationListResponse:
+
+      type: object
+
+      properties:
+
+        notifications:
+          type: array
+
+          items:
+            $ref: '#/components/schemas/NotificationResponse'
+
+        page:
+          type: integer
+          example: 1
+
+        size:
+          type: integer
+          example: 20
+
+        total:
+          type: integer
+          example: 5
+
+
+    # ========================================================
+    # ERROR RESPONSE
+    # ========================================================
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+          type: string
+          description: Mã lỗi.
+          example: "NOTIFICATION_NOT_FOUND"
+
+        message:
+          type: string
+          description: Nội dung thông báo lỗi.
+          example: "Không tìm thấy thông báo."
