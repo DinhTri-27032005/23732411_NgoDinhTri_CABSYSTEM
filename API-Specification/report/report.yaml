@@ -1,0 +1,816 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Report API
+  version: 1.0.0
+  description: |
+    API phục vụ việc truy vấn và quản lý báo cáo hoạt động
+    của hệ thống CAB System.
+
+    Phạm vi:
+    - Xem báo cáo hoạt động.
+    - Tạo báo cáo.
+    - Cập nhật thông tin báo cáo.
+    - Xóa báo cáo.
+
+    Nội dung báo cáo có thể bao gồm:
+    - Số lượng chuyến đi.
+    - Doanh thu.
+    - Tỷ lệ hoàn thành chuyến.
+    - Tỷ lệ hủy chuyến.
+    - Hiệu quả hoạt động của tài xế.
+
+    Traceability:
+    - UC21 - Báo cáo hoạt động.
+    - AC33 - Quản lý có thể xem báo cáo hoạt động.
+    - NFR08 - Ghi log hoạt động.
+    - NFR09 - Khả năng mở rộng dịch vụ.
+
+    Lưu ý:
+    GET là phương thức chính phục vụ UC21.
+    POST, PUT và DELETE là API design bổ sung
+    để hỗ trợ quản lý dữ liệu báo cáo.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Report
+    description: Báo cáo hoạt động hệ thống
+
+
+paths:
+
+  # ==========================================================
+  # API01 - TẠO BÁO CÁO
+  # POST /reports
+  # API DESIGN BỔ SUNG
+  # ==========================================================
+
+  /reports:
+
+    post:
+
+      tags:
+        - Report
+
+      summary: Tạo báo cáo hoạt động
+
+      description: |
+        Tạo một báo cáo hoạt động dựa trên khoảng thời gian
+        và các tiêu chí được cung cấp.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng API tạo báo cáo.
+
+      operationId: createReport
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+
+            example:
+              reportType: "ACTIVITY"
+              fromDate: "2026-09-01"
+              toDate: "2026-09-30"
+
+      responses:
+
+        '201':
+          description: Tạo báo cáo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+
+              example:
+                reportId: "RPT001"
+                reportType: "ACTIVITY"
+                fromDate: "2026-09-01"
+                toDate: "2026-09-30"
+                status: "GENERATED"
+                message: "Tạo báo cáo thành công."
+
+        '400':
+          description: Thông tin yêu cầu không hợp lệ
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_REPORT_DATA"
+                message: "Thông tin báo cáo không hợp lệ."
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Người dùng không có quyền tạo báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+    # ========================================================
+    # API02 - XEM DANH SÁCH BÁO CÁO
+    # GET /reports
+    # API DESIGN BỔ SUNG
+    # ========================================================
+
+    get:
+
+      tags:
+        - Report
+
+      summary: Xem danh sách báo cáo
+
+      description: |
+        Cho phép người dùng có quyền quản lý truy vấn
+        danh sách các báo cáo đã được tạo.
+
+        Đây là API design bổ sung.
+
+      operationId: getReports
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: reportType
+          in: query
+          required: false
+
+          description: Loại báo cáo.
+
+          schema:
+            type: string
+
+            enum:
+              - ACTIVITY
+              - TRIP
+              - REVENUE
+              - DRIVER_PERFORMANCE
+
+          example: "ACTIVITY"
+
+        - name: fromDate
+          in: query
+          required: false
+
+          description: Ngày bắt đầu.
+
+          schema:
+            type: string
+            format: date
+
+          example: "2026-09-01"
+
+        - name: toDate
+          in: query
+          required: false
+
+          description: Ngày kết thúc.
+
+          schema:
+            type: string
+            format: date
+
+          example: "2026-09-30"
+
+        - name: page
+          in: query
+          required: false
+
+          description: Số trang.
+
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+
+          example: 1
+
+        - name: size
+          in: query
+          required: false
+
+          description: Số lượng báo cáo trên mỗi trang.
+
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+          example: 20
+
+      responses:
+
+        '200':
+          description: Lấy danh sách báo cáo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ReportListResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền xem báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # ==========================================================
+  # API03 - XEM CHI TIẾT BÁO CÁO
+  # GET /reports/{reportId}
+  # UC21 / AC33
+  # ==========================================================
+
+  /reports/{reportId}:
+
+    get:
+
+      tags:
+        - Report
+
+      summary: Xem chi tiết báo cáo hoạt động
+
+      description: |
+        Cho phép Quản lý xem báo cáo hoạt động của hệ thống.
+
+        Báo cáo có thể cung cấp:
+        - Số lượng chuyến đi.
+        - Doanh thu.
+        - Tỷ lệ hoàn thành chuyến.
+        - Tỷ lệ hủy chuyến.
+        - Hiệu quả hoạt động của tài xế.
+
+        Theo SRS:
+        - UC21: Báo cáo hoạt động.
+        - Actor: Quản lý.
+        - AC33: Quản lý có thể xem báo cáo hoạt động.
+
+      operationId: getReport
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: reportId
+          in: path
+          required: true
+
+          description: Mã báo cáo.
+
+          schema:
+            type: string
+
+          example: "RPT001"
+
+      responses:
+
+        '200':
+          description: Lấy báo cáo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+
+              example:
+                reportId: "RPT001"
+                reportType: "ACTIVITY"
+                fromDate: "2026-09-01"
+                toDate: "2026-09-30"
+                status: "GENERATED"
+                data:
+                  totalTrips: 1250
+                  revenue: 187500000
+                  completionRate: 92.5
+                  cancellationRate: 7.5
+                  driverEfficiency: 88.2
+                message: "Lấy báo cáo thành công."
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Người dùng không có quyền xem báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "REPORT_NOT_FOUND"
+                message: "Không tìm thấy báo cáo."
+
+
+    # ========================================================
+    # API04 - CẬP NHẬT BÁO CÁO
+    # PUT /reports/{reportId}
+    # API DESIGN BỔ SUNG
+    # ========================================================
+
+    put:
+
+      tags:
+        - Report
+
+      summary: Cập nhật báo cáo
+
+      description: |
+        Cập nhật thông tin của báo cáo đã được tạo.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng chức năng cập nhật báo cáo.
+
+      operationId: updateReport
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: reportId
+          in: path
+          required: true
+
+          description: Mã báo cáo.
+
+          schema:
+            type: string
+
+          example: "RPT001"
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/UpdateReportRequest'
+
+            example:
+              reportType: "ACTIVITY"
+              fromDate: "2026-09-01"
+              toDate: "2026-09-30"
+
+      responses:
+
+        '200':
+          description: Cập nhật báo cáo thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+
+        '400':
+          description: Dữ liệu báo cáo không hợp lệ
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền cập nhật báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+    # ========================================================
+    # API05 - XÓA BÁO CÁO
+    # DELETE /reports/{reportId}
+    # API DESIGN BỔ SUNG
+    # ========================================================
+
+    delete:
+
+      tags:
+        - Report
+
+      summary: Xóa báo cáo
+
+      description: |
+        Xóa một báo cáo đã được tạo khỏi hệ thống.
+
+        Đây là API design bổ sung.
+        SRS không quy định riêng chức năng xóa báo cáo.
+
+      operationId: deleteReport
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: reportId
+          in: path
+          required: true
+
+          description: Mã báo cáo cần xóa.
+
+          schema:
+            type: string
+
+          example: "RPT001"
+
+      responses:
+
+        '204':
+          description: Xóa báo cáo thành công
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền xóa báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy báo cáo
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "REPORT_NOT_FOUND"
+                message: "Không tìm thấy báo cáo."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+      description: |
+        JWT token được sử dụng để xác thực và phân quyền
+        người dùng khi truy cập API.
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # ========================================================
+    # REPORT REQUEST
+    # ========================================================
+
+    ReportRequest:
+
+      type: object
+
+      required:
+        - reportType
+        - fromDate
+        - toDate
+
+      properties:
+
+        reportType:
+          type: string
+
+          description: Loại báo cáo.
+
+          enum:
+            - ACTIVITY
+            - TRIP
+            - REVENUE
+            - DRIVER_PERFORMANCE
+
+          example: "ACTIVITY"
+
+        fromDate:
+          type: string
+          format: date
+
+          description: Ngày bắt đầu của kỳ báo cáo.
+
+          example: "2026-09-01"
+
+        toDate:
+          type: string
+          format: date
+
+          description: Ngày kết thúc của kỳ báo cáo.
+
+          example: "2026-09-30"
+
+
+    # ========================================================
+    # UPDATE REPORT REQUEST
+    # ========================================================
+
+    UpdateReportRequest:
+
+      type: object
+
+      properties:
+
+        reportType:
+          type: string
+
+          enum:
+            - ACTIVITY
+            - TRIP
+            - REVENUE
+            - DRIVER_PERFORMANCE
+
+          example: "ACTIVITY"
+
+        fromDate:
+          type: string
+          format: date
+
+          example: "2026-09-01"
+
+        toDate:
+          type: string
+          format: date
+
+          example: "2026-09-30"
+
+
+    # ========================================================
+    # REPORT DATA
+    # ========================================================
+
+    ReportData:
+
+      type: object
+
+      properties:
+
+        totalTrips:
+          type: integer
+
+          description: Tổng số chuyến đi.
+
+          example: 1250
+
+        revenue:
+          type: number
+          format: double
+
+          description: Tổng doanh thu.
+
+          example: 187500000
+
+        completionRate:
+          type: number
+          format: double
+
+          description: Tỷ lệ hoàn thành chuyến.
+
+          example: 92.5
+
+        cancellationRate:
+          type: number
+          format: double
+
+          description: Tỷ lệ hủy chuyến.
+
+          example: 7.5
+
+        driverEfficiency:
+          type: number
+          format: double
+
+          description: Hiệu quả hoạt động của tài xế.
+
+          example: 88.2
+
+
+    # ========================================================
+    # REPORT RESPONSE
+    # ========================================================
+
+    ReportResponse:
+
+      type: object
+
+      properties:
+
+        reportId:
+          type: string
+
+          description: Mã báo cáo.
+
+          example: "RPT001"
+
+        reportType:
+          type: string
+
+          description: Loại báo cáo.
+
+          enum:
+            - ACTIVITY
+            - TRIP
+            - REVENUE
+            - DRIVER_PERFORMANCE
+
+          example: "ACTIVITY"
+
+        fromDate:
+          type: string
+          format: date
+
+          example: "2026-09-01"
+
+        toDate:
+          type: string
+          format: date
+
+          example: "2026-09-30"
+
+        status:
+          type: string
+
+          description: Trạng thái báo cáo.
+
+          enum:
+            - GENERATED
+            - PROCESSING
+            - FAILED
+
+          example: "GENERATED"
+
+        data:
+          $ref: '#/components/schemas/ReportData'
+
+        message:
+          type: string
+
+          example: "Lấy báo cáo thành công."
+
+
+    # ========================================================
+    # REPORT LIST RESPONSE
+    # ========================================================
+
+    ReportListResponse:
+
+      type: object
+
+      properties:
+
+        reports:
+          type: array
+
+          items:
+            $ref: '#/components/schemas/ReportResponse'
+
+        page:
+          type: integer
+
+          example: 1
+
+        size:
+          type: integer
+
+          example: 20
+
+        total:
+          type: integer
+
+          example: 10
+
+
+    # ========================================================
+    # ERROR RESPONSE
+    # ========================================================
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+          type: string
+
+          description: Mã lỗi.
+
+          example: "REPORT_NOT_FOUND"
+
+        message:
+          type: string
+
+          description: Nội dung thông báo lỗi.
+
+          example: "Không tìm thấy báo cáo."
