@@ -1,0 +1,842 @@
+openapi: 3.0.0
+
+info:
+  title: CAB System - Payment API
+  version: 1.0.0
+  description: |
+    API phục vụ thanh toán trong hệ thống CAB System.
+
+    Phạm vi:
+    - Tạo yêu cầu thanh toán cho chuyến đi.
+    - Thanh toán bằng tiền mặt.
+    - Thanh toán điện tử.
+    - Tra cứu thông tin thanh toán.
+    - Cập nhật trạng thái thanh toán.
+    - Hủy yêu cầu thanh toán.
+
+    Traceability:
+    - UC11 - Thanh toán.
+    - UC12 - Thanh toán điện tử.
+    - FR19 - Thanh toán tiền mặt.
+    - FR20 - Thanh toán điện tử.
+    - FR21 - Tích hợp thanh toán.
+    - FR22 - Bảo vệ dữ liệu thanh toán.
+    - FR23 - Xử lý thanh toán thất bại.
+    - AC17 - Thanh toán tiền mặt.
+    - AC18 - Thanh toán điện tử.
+    - AC19 - Thanh toán thành công.
+    - AC20 - Thanh toán thất bại.
+    - AC21 - Bảo vệ dữ liệu thanh toán.
+
+    Lưu ý:
+    GET, PUT và DELETE là các API design bổ sung
+    để hoàn thiện việc quản lý Payment.
+    SRS không quy định riêng tất cả các phương thức này.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+tags:
+  - name: Payment
+    description: Quản lý thanh toán
+
+
+paths:
+
+  # ==========================================================
+  # API01 - TẠO YÊU CẦU THANH TOÁN
+  # POST /payments
+  # UC11 / UC12 / FR19-FR23 / AC17-AC21
+  # ==========================================================
+
+  /payments:
+
+    post:
+
+      tags:
+        - Payment
+
+      summary: Tạo yêu cầu thanh toán
+
+      description: |
+        Cho phép khách hàng thực hiện thanh toán cho chuyến đi.
+
+        Hệ thống hỗ trợ:
+        - Thanh toán bằng tiền mặt.
+        - Thanh toán điện tử.
+
+        Theo SRS:
+        - UC11: Thanh toán.
+        - UC12: Thanh toán điện tử.
+        - FR19: Thanh toán tiền mặt.
+        - FR20: Thanh toán điện tử.
+        - FR21: Tích hợp thanh toán.
+        - FR22: Bảo vệ dữ liệu thanh toán.
+        - FR23: Xử lý thanh toán thất bại.
+
+      operationId: createPayment
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+
+            examples:
+
+              cashPayment:
+                summary: Thanh toán bằng tiền mặt
+                value:
+                  tripId: "TRIP001"
+                  customerId: "CUS001"
+                  amount: 150000
+                  paymentMethod: "CASH"
+
+              electronicPayment:
+                summary: Thanh toán điện tử
+                value:
+                  tripId: "TRIP001"
+                  customerId: "CUS001"
+                  amount: 150000
+                  paymentMethod: "ELECTRONIC"
+                  provider: "PAYMENT_PROVIDER"
+
+      responses:
+
+        '201':
+          description: Tạo yêu cầu thanh toán thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+              example:
+                paymentId: "PAY001"
+                tripId: "TRIP001"
+                customerId: "CUS001"
+                amount: 150000
+                paymentMethod: "CASH"
+                status: "PENDING"
+                message: "Tạo yêu cầu thanh toán thành công."
+
+        '400':
+          description: Dữ liệu thanh toán không hợp lệ
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "INVALID_PAYMENT_DATA"
+                message: "Dữ liệu thanh toán không hợp lệ."
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy chuyến đi
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "TRIP_NOT_FOUND"
+                message: "Không tìm thấy chuyến đi."
+
+        '409':
+          description: Chuyến đi đã được thanh toán
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "PAYMENT_ALREADY_COMPLETED"
+                message: "Chuyến đi đã được thanh toán."
+
+
+    # ========================================================
+    # API02 - LẤY DANH SÁCH THANH TOÁN
+    # GET /payments
+    # API DESIGN BỔ SUNG
+    # ========================================================
+
+    get:
+
+      tags:
+        - Payment
+
+      summary: Tra cứu danh sách thanh toán
+
+      description: |
+        Cho phép người dùng đã xác thực tra cứu
+        các giao dịch thanh toán.
+
+        Đây là API design bổ sung để hỗ trợ
+        việc tra cứu Payment.
+
+      operationId: getPayments
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: customerId
+          in: query
+          required: false
+
+          description: Mã khách hàng.
+
+          schema:
+            type: string
+
+          example: "CUS001"
+
+        - name: tripId
+          in: query
+          required: false
+
+          description: Mã chuyến đi.
+
+          schema:
+            type: string
+
+          example: "TRIP001"
+
+        - name: status
+          in: query
+          required: false
+
+          description: Trạng thái thanh toán.
+
+          schema:
+            type: string
+
+            enum:
+              - PENDING
+              - PROCESSING
+              - SUCCESS
+              - FAILED
+              - CANCELLED
+
+          example: "SUCCESS"
+
+        - name: paymentMethod
+          in: query
+          required: false
+
+          description: Phương thức thanh toán.
+
+          schema:
+            type: string
+
+            enum:
+              - CASH
+              - ELECTRONIC
+
+          example: "ELECTRONIC"
+
+        - name: page
+          in: query
+          required: false
+
+          description: Số trang.
+
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+
+          example: 1
+
+        - name: size
+          in: query
+          required: false
+
+          description: Số lượng giao dịch trên mỗi trang.
+
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+          example: 20
+
+      responses:
+
+        '200':
+          description: Lấy danh sách thanh toán thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/PaymentListResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # ==========================================================
+  # API03 - CẬP NHẬT THANH TOÁN
+  # PUT /payments/{paymentId}
+  # API DESIGN BỔ SUNG
+  # ==========================================================
+
+  /payments/{paymentId}:
+
+    get:
+
+      tags:
+        - Payment
+
+      summary: Xem thông tin thanh toán
+
+      description: |
+        Cho phép người dùng đã xác thực xem thông tin
+        chi tiết của một giao dịch thanh toán.
+
+        Đây là API design bổ sung.
+
+      operationId: getPayment
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: paymentId
+          in: path
+          required: true
+
+          description: Mã giao dịch thanh toán.
+
+          schema:
+            type: string
+
+          example: "PAY001"
+
+      responses:
+
+        '200':
+          description: Lấy thông tin thanh toán thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền xem giao dịch
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy giao dịch
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "PAYMENT_NOT_FOUND"
+                message: "Không tìm thấy giao dịch thanh toán."
+
+
+    put:
+
+      tags:
+        - Payment
+
+      summary: Cập nhật trạng thái thanh toán
+
+      description: |
+        Cập nhật trạng thái của giao dịch thanh toán
+        trong quá trình xử lý.
+
+        Ví dụ:
+        - PENDING → PROCESSING.
+        - PROCESSING → SUCCESS.
+        - PROCESSING → FAILED.
+
+        Đây là API design bổ sung nhằm hỗ trợ
+        quá trình xử lý thanh toán.
+
+      operationId: updatePayment
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: paymentId
+          in: path
+          required: true
+
+          description: Mã giao dịch thanh toán.
+
+          schema:
+            type: string
+
+          example: "PAY001"
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentRequest'
+
+            example:
+              status: "SUCCESS"
+              transactionId: "TXN001"
+
+      responses:
+
+        '200':
+          description: Cập nhật trạng thái thanh toán thành công
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+        '400':
+          description: Trạng thái thanh toán không hợp lệ
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền cập nhật thanh toán
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy giao dịch
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+    # ========================================================
+    # API04 - XÓA / HỦY YÊU CẦU THANH TOÁN
+    # DELETE /payments/{paymentId}
+    # API DESIGN BỔ SUNG
+    # ========================================================
+
+    delete:
+
+      tags:
+        - Payment
+
+      summary: Hủy yêu cầu thanh toán
+
+      description: |
+        Hủy một yêu cầu thanh toán chưa hoàn tất.
+
+        Không cho phép hủy giao dịch đã thanh toán thành công.
+
+        Đây là API design bổ sung.
+        SRS chỉ quy định xử lý thanh toán thất bại
+        và không quy định riêng API DELETE.
+
+      operationId: cancelPayment
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+
+        - name: paymentId
+          in: path
+          required: true
+
+          description: Mã giao dịch thanh toán cần hủy.
+
+          schema:
+            type: string
+
+          example: "PAY001"
+
+      responses:
+
+        '204':
+          description: Hủy yêu cầu thanh toán thành công
+
+        '400':
+          description: Không thể hủy giao dịch
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "PAYMENT_CANNOT_BE_CANCELLED"
+                message: "Không thể hủy giao dịch thanh toán."
+
+        '401':
+          description: Người dùng chưa được xác thực
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Không có quyền hủy giao dịch
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Không tìm thấy giao dịch
+
+          content:
+            application/json:
+
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+              example:
+                code: "PAYMENT_NOT_FOUND"
+                message: "Không tìm thấy giao dịch thanh toán."
+
+
+# ============================================================
+# COMPONENTS
+# ============================================================
+
+components:
+
+  # ==========================================================
+  # SECURITY
+  # ==========================================================
+
+  securitySchemes:
+
+    bearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
+
+      description: |
+        JWT token được sử dụng để xác thực người dùng
+        khi truy cập các API yêu cầu đăng nhập.
+
+
+  # ==========================================================
+  # SCHEMAS
+  # ==========================================================
+
+  schemas:
+
+    # ========================================================
+    # PAYMENT REQUEST
+    # ========================================================
+
+    PaymentRequest:
+
+      type: object
+
+      required:
+        - tripId
+        - customerId
+        - amount
+        - paymentMethod
+
+      properties:
+
+        tripId:
+          type: string
+          description: Mã chuyến đi cần thanh toán.
+          example: "TRIP001"
+
+        customerId:
+          type: string
+          description: Mã khách hàng thực hiện thanh toán.
+          example: "CUS001"
+
+        amount:
+          type: number
+          format: double
+          minimum: 0
+
+          description: |
+            Số tiền cần thanh toán.
+
+          example: 150000
+
+        paymentMethod:
+          type: string
+
+          description: Phương thức thanh toán.
+
+          enum:
+            - CASH
+            - ELECTRONIC
+
+          example: "CASH"
+
+        provider:
+          type: string
+          nullable: true
+
+          description: |
+            Nhà cung cấp thanh toán điện tử,
+            sử dụng khi paymentMethod là ELECTRONIC.
+
+          example: "PAYMENT_PROVIDER"
+
+
+    # ========================================================
+    # UPDATE PAYMENT REQUEST
+    # ========================================================
+
+    UpdatePaymentRequest:
+
+      type: object
+
+      required:
+        - status
+
+      properties:
+
+        status:
+          type: string
+
+          description: Trạng thái mới của giao dịch.
+
+          enum:
+            - PENDING
+            - PROCESSING
+            - SUCCESS
+            - FAILED
+            - CANCELLED
+
+          example: "SUCCESS"
+
+        transactionId:
+          type: string
+          nullable: true
+
+          description: |
+            Mã giao dịch từ nhà cung cấp thanh toán điện tử.
+
+          example: "TXN001"
+
+
+    # ========================================================
+    # PAYMENT RESPONSE
+    # ========================================================
+
+    PaymentResponse:
+
+      type: object
+
+      properties:
+
+        paymentId:
+          type: string
+          description: Mã giao dịch thanh toán.
+          example: "PAY001"
+
+        tripId:
+          type: string
+          description: Mã chuyến đi.
+          example: "TRIP001"
+
+        customerId:
+          type: string
+          description: Mã khách hàng.
+          example: "CUS001"
+
+        amount:
+          type: number
+          format: double
+
+          description: Số tiền thanh toán.
+
+          example: 150000
+
+        paymentMethod:
+          type: string
+
+          description: Phương thức thanh toán.
+
+          enum:
+            - CASH
+            - ELECTRONIC
+
+          example: "CASH"
+
+        provider:
+          type: string
+          nullable: true
+
+          description: Nhà cung cấp thanh toán điện tử.
+
+          example: "PAYMENT_PROVIDER"
+
+        transactionId:
+          type: string
+          nullable: true
+
+          description: Mã giao dịch.
+
+          example: "TXN001"
+
+        status:
+          type: string
+
+          description: Trạng thái thanh toán.
+
+          enum:
+            - PENDING
+            - PROCESSING
+            - SUCCESS
+            - FAILED
+            - CANCELLED
+
+          example: "SUCCESS"
+
+        message:
+          type: string
+
+          description: Thông báo kết quả.
+
+          example: "Thanh toán thành công."
+
+
+    # ========================================================
+    # PAYMENT LIST RESPONSE
+    # ========================================================
+
+    PaymentListResponse:
+
+      type: object
+
+      properties:
+
+        payments:
+          type: array
+
+          items:
+            $ref: '#/components/schemas/PaymentResponse'
+
+        page:
+          type: integer
+
+          example: 1
+
+        size:
+          type: integer
+
+          example: 20
+
+        total:
+          type: integer
+
+          example: 5
+
+
+    # ========================================================
+    # ERROR RESPONSE
+    # ========================================================
+
+    ErrorResponse:
+
+      type: object
+
+      properties:
+
+        code:
+          type: string
+
+          description: Mã lỗi.
+
+          example: "PAYMENT_FAILED"
+
+        message:
+          type: string
+
+          description: Nội dung thông báo lỗi.
+
+          example: "Thanh toán không thành công."
