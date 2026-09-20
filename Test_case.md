@@ -226,125 +226,126 @@
 | **OR-TC-019** | Lưu vết thao tác | **Positive – Thao tác quản trị quan trọng được lưu vết** | Operation Staff có quyền và thực hiện thao tác quan trọng | 1. Thực hiện thao tác quản trị<br>2. Kiểm tra dữ liệu lưu vết | Operation = important action | Hệ thống lưu vết thao tác để phục vụ kiểm tra khi xảy ra sự cố | High |
 | **OR-TC-020** | Xem báo cáo hoạt động | **Positive – Management xem đầy đủ các chỉ số báo cáo theo SRS** | Management đã đăng nhập và có quyền xem báo cáo | 1. Mở chức năng Báo cáo hoạt động<br>2. Xem các chỉ số báo cáo | Metrics = số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy, hiệu quả Driver | Hệ thống hiển thị các báo cáo về số lượng chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của Driver | High |
 
-
-#PHẦN 2: Traceability
+# PHẦN 2: TRACEABILITY
 
 | **Test Case ID** | **Test Scenario** | **Test Type** | **FR/NFR** | **Use Case** | **Acceptance Criteria** | **Basis in SRS** |
 |---|---|---|---|---|---|---|
-
-| AUTH-TC-001 | Đăng ký tài khoản | Positive | FR01 | UC01 | AC01 | Hệ thống cho phép đăng ký tài khoản theo FR01 |
-| AUTH-TC-002 | Đăng ký tài khoản | Empty/Null | FR01 | UC01 | AC01 | Request đăng ký phải đáp ứng dữ liệu bắt buộc theo API |
+| AUTH-TC-001 | Đăng ký tài khoản | Positive | FR01 | UC01 | AC01 | Customer có thể đăng ký tài khoản |
+| AUTH-TC-002 | Đăng ký tài khoản | Empty/Null | FR01 | UC01 | AC01 | Request đăng ký phải đáp ứng dữ liệu bắt buộc theo validation của API |
 | AUTH-TC-003 | Đăng ký tài khoản | Empty/Null | FR01 | UC01 | AC01 | Request rỗng không đáp ứng điều kiện đăng ký tài khoản |
 | AUTH-TC-004 | Đăng ký tài khoản | Invalid Format/Value | FR01 | UC01 | AC01 | SRS không quy định format cụ thể; kiểm thử theo validation của API |
-| AUTH-TC-005 | Đăng ký tài khoản | Boundary | FR01 | UC01 | AC01 | SRS chưa quy định min/max; kiểm thử theo rule thực tế của API |
-| AUTH-TC-006 | Đăng ký tài khoản | Boundary | FR01 | UC01 | AC01 | Giá trị dưới giới hạn API phải bị validation |
-| AUTH-TC-007 | Đăng nhập | Positive | FR02, NFR06 | UC02 | AC02 | Customer có thông tin hợp lệ được phép đăng nhập |
-| AUTH-TC-008 | Đăng nhập | Positive | FR02, NFR06 | UC02 | AC02 | Driver có thông tin hợp lệ được phép đăng nhập |
+| AUTH-TC-005 | Đăng ký tài khoản | Positive | FR01 | UC01 | AC01 | Driver có thể đăng ký tài khoản |
+| AUTH-TC-006 | Đăng ký tài khoản Driver | Positive | FR01 | UC01 | AC01 | Operation Staff có thể tạo tài khoản Driver theo quy trình quản lý tài xế |
+| AUTH-TC-007 | Đăng nhập | Positive | FR02, NFR06 | UC02 | AC02 | Customer có thông tin xác thực hợp lệ được phép đăng nhập |
+| AUTH-TC-008 | Đăng nhập | Positive | FR02, NFR06 | UC02 | AC02 | Driver có thông tin xác thực hợp lệ được phép đăng nhập |
 | AUTH-TC-009 | Đăng nhập | Negative | FR02, NFR06 | UC02 | AC02 | Thông tin định danh không tồn tại không được xác thực |
 | AUTH-TC-010 | Đăng nhập | Negative | FR02, NFR06 | UC02 | AC02 | Password không chính xác không được xác thực |
 | AUTH-TC-011 | Đăng nhập | Empty/Null | FR02, NFR06 | UC02 | AC02 | Thiếu thông tin định danh không đáp ứng điều kiện đăng nhập |
 | AUTH-TC-012 | Đăng nhập | Empty/Null | FR02, NFR06 | UC02 | AC02 | Thiếu password không đáp ứng điều kiện đăng nhập |
-| AUTH-TC-013 | Đăng nhập | Empty/Null | FR02, NFR06 | UC02 | AC02 | Không có credential thì không được xác thực |
-| AUTH-TC-014 | Đăng nhập | Invalid Format/Value | FR02, NFR06 | UC02 | AC02 | SRS không quy định format cụ thể; kiểm thử theo validation API |
-| AUTH-TC-015 | Đăng nhập | Boundary | FR02, NFR06 | UC02 | AC02 | Password rule cụ thể chưa được SRS xác định |
-| AUTH-TC-016 | Đăng nhập | Boundary | FR02, NFR06 | UC02 | AC02 | Password dưới giới hạn API phải bị validation |
-| AUTH-TC-017 | Xác thực truy cập | Negative/Security | NFR06 | UC02 | AC02 | Người dùng chưa xác thực không được dùng chức năng yêu cầu tài khoản |
-| AUTH-TC-018 | Xác thực truy cập | Negative/Security | NFR06 | UC02 | AC02 | Credential/token không hợp lệ không được truy cập tài nguyên bảo vệ |
+| AUTH-TC-013 | Đăng nhập | Empty/Null | FR02, NFR06 | UC02 | AC02 | Không có thông tin xác thực thì không được đăng nhập |
+| AUTH-TC-014 | Đăng nhập | Invalid Format/Value | FR02, NFR06 | UC02 | AC02 | SRS không quy định format cụ thể; áp dụng validation Authentication API |
+| AUTH-TC-015 | Đăng nhập | Boundary | FR02, NFR06 | UC02 | AC02 | Password tại giới hạn cấu hình được xử lý theo rule Authentication API |
+| AUTH-TC-016 | Đăng nhập | Boundary | FR02, NFR06 | UC02 | AC02 | Password dưới giới hạn cấu hình phải bị từ chối |
+| AUTH-TC-017 | Xác thực truy cập | Negative/Security | NFR06 | UC02 | AC02 | Người dùng chưa xác thực không được truy cập chức năng yêu cầu tài khoản |
+| AUTH-TC-018 | Xác thực truy cập | Negative/Security | NFR06 | UC02 | AC02 | Credential hoặc token không hợp lệ không được truy cập tài nguyên bảo vệ |
 | AUTH-TC-019 | Xác thực truy cập | Positive | FR02, NFR06 | UC02 | AC02 | Người dùng đã xác thực được sử dụng chức năng thuộc quyền |
 | AUTH-TC-020 | Bảo vệ dữ liệu xác thực | Security | NFR05 | UC02 | — | Dữ liệu xác thực nhạy cảm phải được bảo vệ và không trả trực tiếp password |
-
+| PROF-TC-001 | Cập nhật thông tin | Positive | FR03 | UC03 | AC03 | Customer có thể cập nhật thông tin cá nhân của mình |
+| PROF-TC-002 | Cập nhật thông tin | Positive | FR03 | UC03 | AC03 | Driver có thể cập nhật thông tin hồ sơ của mình |
+| PROF-TC-003 | Cập nhật thông tin phương tiện | Positive | FR03, FR27 | UC03, UC17 | AC03, AC28 | Driver có thể cập nhật thông tin phương tiện thuộc tài khoản của mình |
+| PROF-TC-004 | Cập nhật trạng thái hoạt động | Positive | FR03 | UC03 | AC03 | Driver có thể cập nhật trạng thái hoạt động của mình |
+| PROF-TC-005 | Cập nhật thông tin | Empty/Null | FR03 | UC03 | AC03 | Request cập nhật phải có dữ liệu phù hợp theo validation của API |
+| PROF-TC-006 | Cập nhật thông tin | Invalid Format/Value | FR03 | UC03 | AC03 | Dữ liệu cập nhật phải đáp ứng validation của API |
+| PROF-TC-007 | Cập nhật thông tin | Negative/Security | FR03, NFR06 | UC03 | AC03 | Người dùng phải được xác thực trước khi cập nhật thông tin |
+| PROF-TC-008 | Cập nhật thông tin | Negative/Authorization | FR03, NFR05 | UC03 | AC03 | Người dùng chỉ được cập nhật hồ sơ thuộc tài khoản của mình |
 | BOOK-TC-001 | Tạo yêu cầu đặt xe | Positive | FR04–FR07 | UC04 | AC04 | Customer nhập điểm đón, điểm đến, chọn loại xe và gửi yêu cầu đặt xe |
 | BOOK-TC-002 | Tạo yêu cầu đặt xe | Positive | FR07, FR08 | UC04, UC05 | AC05 | Booking được ghi nhận và hệ thống bắt đầu quá trình tìm Driver |
 | BOOK-TC-003 | Tạo yêu cầu đặt xe | Empty/Null | FR04, FR07 | UC04 | AC04 | Điểm đón là thông tin cần thiết của yêu cầu đặt xe |
 | BOOK-TC-004 | Tạo yêu cầu đặt xe | Empty/Null | FR05, FR07 | UC04 | AC04 | Điểm đến là thông tin cần thiết của yêu cầu đặt xe |
 | BOOK-TC-005 | Tạo yêu cầu đặt xe | Empty/Null | FR06, FR07 | UC04 | AC04 | Customer phải lựa chọn loại xe khi tạo booking |
-| BOOK-TC-006 | Tạo yêu cầu đặt xe | Empty/Null | FR04, FR05, FR07 | UC04 | AC04 | Booking cần điểm đón và điểm đến |
-| BOOK-TC-007 | Tạo yêu cầu đặt xe | Empty/Null | FR04–FR07 | UC04 | AC04 | Body rỗng không có đủ dữ liệu tạo yêu cầu đặt xe |
-| BOOK-TC-008 | Tạo yêu cầu đặt xe | Invalid Format/Value | FR06, FR07 | UC04 | AC04 | Loại xe phải thuộc các loại được hệ thống hỗ trợ |
+| BOOK-TC-006 | Tạo yêu cầu đặt xe | Empty/Null | FR04, FR05, FR07 | UC04 | AC04 | Booking phải có điểm đón và điểm đến |
+| BOOK-TC-007 | Tạo yêu cầu đặt xe | Empty/Null | FR04–FR07 | UC04 | AC04 | Request rỗng không có đủ dữ liệu tạo booking |
+| BOOK-TC-008 | Tạo yêu cầu đặt xe | Invalid Format/Value | FR06, FR07 | UC04 | AC04 | Loại xe phải thuộc loại được hệ thống hỗ trợ |
 | BOOK-TC-009 | Tạo yêu cầu đặt xe | Invalid Format/Value | FR04, FR07 | UC04 | AC04 | SRS không quy định format điểm đón; áp dụng validation Booking API |
 | BOOK-TC-010 | Tạo yêu cầu đặt xe | Invalid Format/Value | FR05, FR07 | UC04 | AC04 | SRS không quy định format điểm đến; áp dụng validation Booking API |
 | BOOK-TC-011 | Tạo yêu cầu đặt xe | Negative/Security | FR02, FR07, NFR06 | UC02, UC04 | AC02, AC04 | Customer phải được xác thực trước khi sử dụng chức năng đặt xe |
-| BOOK-TC-012 | Tạo yêu cầu đặt xe | Negative/Security | NFR06 | UC02, UC04 | AC02 | Token/credential không hợp lệ không đáp ứng yêu cầu xác thực |
-| BOOK-TC-013 | Tạo yêu cầu đặt xe | Negative/Authorization | FR07 | UC04 | AC04 | Actor thực hiện UC04 – Đặt xe là Customer |
-| BOOK-TC-014 | Tạo yêu cầu đặt xe | Boundary | FR04–FR07 | UC04 | AC04 | Có đủ điểm đón, điểm đến và loại xe thì đáp ứng thông tin nghiệp vụ tối thiểu |
+| BOOK-TC-012 | Tạo yêu cầu đặt xe | Negative/Security | NFR06 | UC02, UC04 | AC02 | Token không hợp lệ không đáp ứng yêu cầu xác thực |
+| BOOK-TC-013 | Tạo yêu cầu đặt xe | Negative/Authorization | FR07 | UC04 | AC04 | Actor thực hiện chức năng Đặt xe là Customer |
+| BOOK-TC-014 | Tạo yêu cầu đặt xe | Boundary | FR04–FR07 | UC04 | AC04 | Có đủ điểm đón, điểm đến và loại xe thì đáp ứng dữ liệu nghiệp vụ tối thiểu |
 | BOOK-TC-015 | Tạo yêu cầu đặt xe | Boundary | FR04–FR07 | UC04 | AC04 | Thiếu một thông tin nghiệp vụ bắt buộc thì booking chưa đầy đủ |
 | BOOK-TC-016 | Tra cứu booking | Positive | FR07 | UC04 | — | Kiểm thử API trên Booking đã được hệ thống ghi nhận; SRS không có AC riêng cho tra cứu Booking |
-| BOOK-TC-017 | Tra cứu booking | Negative | FR07 | UC04 | — | Booking không tồn tại thì API không có dữ liệu Booking tương ứng |
+| BOOK-TC-017 | Tra cứu booking | Negative | FR07 | UC04 | — | Booking không tồn tại thì không có dữ liệu tương ứng |
 | BOOK-TC-018 | Tra cứu booking | Invalid Format/Value | FR07 | UC04 | — | SRS không quy định format Booking ID; áp dụng validation API |
-| BOOK-TC-019 | Tra cứu booking | Negative/Security | NFR05 | UC04 | — | Thông tin Booking của Customer phải được bảo vệ khỏi truy cập trái phép |
+| BOOK-TC-019 | Tra cứu booking | Negative/Security | NFR05 | UC04 | — | Dữ liệu Booking của Customer phải được bảo vệ khỏi truy cập trái phép |
 | BOOK-TC-020 | Response tạo booking | Positive | FR07 | UC04 | AC05 | Hệ thống ghi nhận yêu cầu đặt xe sau khi Customer gửi |
-
 | DLM-TC-001 | Cập nhật vị trí tài xế | Positive | FR17 | UC05, UC07 | AC14 | Vị trí Driver được lưu để hỗ trợ matching và dự kiến thời gian đến |
-| DLM-TC-002 | Cập nhật vị trí tài xế | Positive | FR17 | UC05, UC07 | AC14 | Vị trí Driver được cập nhật phục vụ matching và theo dõi |
-| DLM-TC-003 | Cập nhật vị trí tài xế | Empty/Null | FR17 | UC05, UC07 | AC14 | Dữ liệu vị trí phải hợp lệ để phục vụ tìm Driver và ETA |
-| DLM-TC-004 | Cập nhật vị trí tài xế | Invalid Format/Value | FR17 | UC05, UC07 | AC14 | SRS không định nghĩa cấu trúc vị trí; áp dụng validation Driver Location API |
+| DLM-TC-002 | Cập nhật vị trí tài xế | Positive | FR17 | UC05, UC07 | AC14 | Vị trí Driver được cập nhật để phục vụ matching và theo dõi |
+| DLM-TC-003 | Cập nhật vị trí tài xế | Empty/Null | FR17 | UC05, UC07 | AC14 | Dữ liệu vị trí phải hợp lệ để hỗ trợ matching và ETA |
+| DLM-TC-004 | Cập nhật vị trí tài xế | Invalid Format/Value | FR17 | UC05, UC07 | AC14 | SRS không quy định cấu trúc vị trí; áp dụng validation Driver Location API |
 | DLM-TC-005 | Cập nhật vị trí tài xế | Negative/Security | FR17, NFR06 | UC05, UC07 | AC14 | Driver phải được xác thực khi cập nhật dữ liệu vị trí |
-| DLM-TC-006 | Cập nhật vị trí tài xế | Negative/Security | FR17, NFR06 | UC05, UC07 | AC14 | Credential không hợp lệ không được cập nhật vị trí Driver |
-| DLM-TC-007 | Cập nhật vị trí tài xế | Boundary/State | FR17 | UC05, UC07 | AC06, AC14 | Vị trí hợp lệ cho phép Driver được xét trong matching và hỗ trợ ETA |
+| DLM-TC-006 | Cập nhật vị trí tài xế | Negative/Security | FR17, NFR06 | UC05, UC07 | AC14 | Token không hợp lệ không được cập nhật vị trí Driver |
+| DLM-TC-007 | Cập nhật vị trí tài xế | Boundary/State | FR17 | UC05, UC07 | AC06, AC14 | Sau khi có vị trí hợp lệ, Driver có thể được xét trong matching |
 | DLM-TC-008 | Tìm tài xế phù hợp | Positive | FR08 | UC05 | AC06 | Matching dựa trên vị trí, trạng thái sẵn sàng và tiêu chí vận hành |
 | DLM-TC-009 | Tìm tài xế phù hợp | Positive | FR09 | UC05 | AC07 | Hệ thống ưu tiên Driver phù hợp và gần Customer |
 | DLM-TC-010 | Tìm tài xế phù hợp | Negative/State | FR08 | UC05 | AC06 | Driver phải ở trạng thái sẵn sàng khi được xét matching |
 | DLM-TC-011 | Tìm tài xế phù hợp | Negative | FR08, FR17 | UC05 | AC06, AC14 | Vị trí Driver được sử dụng trong quá trình xác định Driver phù hợp |
 | DLM-TC-012 | Tìm tài xế phù hợp | Invalid Format/Value | FR08, FR17 | UC05 | AC06, AC14 | Dữ liệu vị trí không hợp lệ không được dùng để ưu tiên Driver |
 | DLM-TC-013 | Tìm tài xế phù hợp | Empty/Null | FR08, FR14 | UC05 | AC06, AC11 | Không có ứng viên phù hợp dẫn đến trường hợp không tìm được Driver |
-| DLM-TC-014 | Tìm tài xế phù hợp | Negative | FR08 | UC05 | AC06 | Chỉ Driver đáp ứng các tiêu chí matching mới được lựa chọn |
-| DLM-TC-015 | Tìm tài xế phù hợp | Positive | FR10 | UC05 | AC06 | Hệ thống gửi yêu cầu chuyến đến Driver được xác định phù hợp |
+| DLM-TC-014 | Tìm tài xế phù hợp | Negative | FR08 | UC05 | AC06 | Chỉ Driver đáp ứng tiêu chí mới được xác định là phù hợp |
+| DLM-TC-015 | Tìm tài xế phù hợp | Positive | FR10 | UC05 | AC06 | Hệ thống gửi yêu cầu chuyến đến Driver phù hợp |
 | DLM-TC-016 | Matching lại tài xế | Negative/Exception | FR12, FR13 | UC06, UC05 | AC09 | Driver từ chối thì hệ thống tiếp tục tìm Driver khác |
 | DLM-TC-017 | Matching lại tài xế | Boundary/Exception | FR13 | UC05 | AC10 | Driver không phản hồi đến timeout cấu hình thì hệ thống tiếp tục matching |
-| DLM-TC-018 | Matching lại tài xế | Positive | FR13 | UC05 | AC09, AC10 | Hệ thống tìm Driver tiếp theo mà Customer không phải tạo lại booking |
-| DLM-TC-019 | Không tìm được tài xế | Negative/Exception | FR14 | UC05 | AC11 | Không còn Driver phù hợp thì hệ thống xác định matching thất bại |
-| DLM-TC-020 | Không tìm được tài xế | Positive/Notification | FR14, FR24 | UC05, UC12 | AC11, AC22 | Khi không tìm được Driver, Customer phải nhận được thông báo rõ ràng |
-
-| TRIP-TC-001 | Phản hồi yêu cầu chuyến | Positive | FR11 | UC06 | AC08 | Driver chấp nhận yêu cầu và được hệ thống phân công cho chuyến |
+| DLM-TC-018 | Matching lại tài xế | Positive | FR13 | UC05 | AC09, AC10 | Hệ thống tiếp tục matching mà Customer không cần tạo lại booking |
+| DLM-TC-019 | Không tìm được tài xế | Negative/Exception | FR14 | UC05 | AC11 | Không còn Driver phù hợp thì hệ thống xác định không tìm được Driver |
+| DLM-TC-020 | Không tìm được tài xế | Positive/Notification | FR14, FR24 | UC05, UC12 | AC11, AC22 | Khi không tìm được Driver, hệ thống thông báo rõ ràng cho Customer |
+| TRIP-TC-001 | Phản hồi yêu cầu chuyến | Positive | FR11 | UC06 | AC08 | Driver chấp nhận yêu cầu và được phân công cho chuyến |
 | TRIP-TC-002 | Phản hồi yêu cầu chuyến | Positive/Exception | FR12, FR13 | UC06, UC05 | AC09 | Driver từ chối và hệ thống tiếp tục tìm Driver khác |
 | TRIP-TC-003 | Phản hồi yêu cầu chuyến | Negative/Security | FR11, NFR06 | UC06 | AC08 | Driver chưa xác thực không được chấp nhận yêu cầu chuyến |
 | TRIP-TC-004 | Phản hồi yêu cầu chuyến | Negative/Security | FR12, NFR06 | UC06 | AC09 | Driver chưa xác thực không được từ chối yêu cầu chuyến |
-| TRIP-TC-005 | Phản hồi yêu cầu chuyến | Negative/Authorization | FR11, FR12 | UC06 | AC08, AC09 | Chỉ Driver nhận yêu cầu chuyến tương ứng mới được phản hồi yêu cầu đó |
+| TRIP-TC-005 | Phản hồi yêu cầu chuyến | Negative/Authorization | FR11, FR12 | UC06 | AC08, AC09 | Chỉ Driver nhận yêu cầu chuyến tương ứng mới được phản hồi |
 | TRIP-TC-006 | Phản hồi yêu cầu chuyến | Invalid Format/Value | FR11, FR12 | UC06 | AC08, AC09 | SRS không quy định format Request ID; áp dụng validation API |
-| TRIP-TC-007 | Phản hồi yêu cầu chuyến | Negative | FR11, FR12 | UC06 | AC08, AC09 | Request phải tồn tại để Driver có thể Accept hoặc Reject |
-| TRIP-TC-008 | Phản hồi yêu cầu chuyến | Empty/Null | FR11, FR12 | UC06 | AC08, AC09 | Thiếu Request ID thì không xác định được yêu cầu chuyến cần phản hồi |
+| TRIP-TC-007 | Phản hồi yêu cầu chuyến | Negative | FR11, FR12 | UC06 | AC08, AC09 | Request phải tồn tại để Driver Accept hoặc Reject |
+| TRIP-TC-008 | Phản hồi yêu cầu chuyến | Empty/Null | FR11, FR12 | UC06 | AC08, AC09 | Thiếu Request ID thì không xác định được yêu cầu chuyến |
 | TRIP-TC-009 | Phản hồi yêu cầu chuyến | Boundary/Exception | FR13 | UC05 | AC10 | Driver không phản hồi thì hệ thống tiếp tục tìm Driver khác |
 | TRIP-TC-010 | Phản hồi yêu cầu chuyến | Negative/State | FR11 | UC06 | AC08 | Driver phải ở trạng thái phù hợp để nhận chuyến |
-| TRIP-TC-011 | Cập nhật trạng thái chuyến | Positive | FR15 | UC08 | AC13 | Driver cập nhật trạng thái “Đã đến điểm đón” |
-| TRIP-TC-012 | Cập nhật trạng thái chuyến | Positive | FR15 | UC08 | AC13 | Driver cập nhật trạng thái “Đã đón khách” |
-| TRIP-TC-013 | Cập nhật trạng thái chuyến | Positive | FR15 | UC08 | AC13 | Driver cập nhật trạng thái “Đang di chuyển” |
-| TRIP-TC-014 | Cập nhật trạng thái chuyến | Positive | FR15, FR18 | UC08, UC09 | AC15, AC16 | Khi Trip hoàn thành, hệ thống ghi nhận Completed và chuyển sang tính cước |
+| TRIP-TC-011 | Cập nhật trạng thái chuyến | Positive | FR15 | UC08 | AC13 | Driver cập nhật trạng thái Đã đến điểm đón |
+| TRIP-TC-012 | Cập nhật trạng thái chuyến | Positive | FR15 | UC08 | AC13 | Driver cập nhật trạng thái Đã đón khách |
+| TRIP-TC-013 | Cập nhật trạng thái chuyến | Positive | FR15 | UC08 | AC13 | Driver cập nhật trạng thái Đang di chuyển |
+| TRIP-TC-014 | Cập nhật trạng thái chuyến | Positive | FR15, FR18 | UC08, UC09 | AC15, AC16 | Khi Trip hoàn thành, hệ thống ghi nhận Completed và chuyển sang bước xác định số tiền phải trả |
 | TRIP-TC-015 | Cập nhật trạng thái chuyến | Empty/Null | FR15 | UC08 | AC13 | Thiếu trạng thái thì hệ thống không thể cập nhật Trip |
-| TRIP-TC-016 | Cập nhật trạng thái chuyến | Invalid Format/Value | FR15 | UC08 | AC13 | Trạng thái chuyến phải thuộc các trạng thái nghiệp vụ được SRS xác định |
+| TRIP-TC-016 | Cập nhật trạng thái chuyến | Invalid Format/Value | FR15 | UC08 | AC13 | Trạng thái phải thuộc các trạng thái nghiệp vụ được hỗ trợ |
 | TRIP-TC-017 | Cập nhật trạng thái chuyến | Negative/Authorization | FR15 | UC08 | AC13 | Driver chỉ được cập nhật Trip mà mình đang thực hiện |
 | TRIP-TC-018 | Cập nhật trạng thái chuyến | Negative | FR15 | UC08 | AC13 | Trip phải tồn tại để cập nhật trạng thái |
 | TRIP-TC-019 | Theo dõi chuyến | Positive | FR16 | UC07 | AC12 | Customer xem được trạng thái hiện tại và thông tin Driver đã nhận chuyến |
-| TRIP-TC-020 | Hoàn thành chuyến | Boundary/State | FR15, FR18 | UC08, UC09 | AC15, AC16 | Sau khi Trip chuyển sang Completed, hệ thống mới chuyển sang bước xác định Fare |
-
-| FP-TC-001 | Tính cước chuyến đi | Positive | FR18 | UC09 | AC16 | Sau khi Trip hoàn thành, hệ thống xác định số tiền Customer phải trả |
-| FP-TC-002 | Tính cước chuyến đi | Boundary/State | FR18 | UC09 | AC16 | Fare chỉ được xác định sau khi Trip hoàn thành |
-| FP-TC-003 | Tính cước chuyến đi | Boundary/State | FR18 | UC09 | AC15, AC16 | Completed là trạng thái chuyển từ thực hiện chuyến sang tính cước |
-| FP-TC-004 | Tính cước chuyến đi | Negative | FR18 | UC09 | AC16 | Trip phải tồn tại để xác định Fare |
-| FP-TC-005 | Tính cước chuyến đi | Empty/Null | FR18 | UC09 | AC16 | Thiếu Trip ID thì không xác định được chuyến cần tính cước |
-| FP-TC-006 | Tính cước chuyến đi | Invalid Format/Value | FR18 | UC09 | AC16 | SRS không quy định format Trip ID; áp dụng validation Fare API |
+| TRIP-TC-020 | Hoàn thành chuyến | Boundary/State | FR15, FR18 | UC08, UC09 | AC15, AC16 | Sau khi Trip chuyển sang Completed, hệ thống mới chuyển sang bước xác định số tiền phải trả |
+| FP-TC-001 | Xác định số tiền phải trả | Positive | FR18 | UC09 | AC16 | Sau khi Trip hoàn thành, hệ thống xác định số tiền Customer phải trả dựa trên loại dịch vụ và thông tin chuyến đi |
+| FP-TC-002 | Xác định số tiền phải trả | Boundary/State | FR18 | UC09 | AC16 | Hệ thống không xác định số tiền phải trả trước khi Trip hoàn thành |
+| FP-TC-003 | Xác định số tiền phải trả | Boundary/State | FR18 | UC09 | AC15, AC16 | Completed là trạng thái chuyển sang bước xác định số tiền phải trả |
+| FP-TC-004 | Xác định số tiền phải trả | Negative | FR18 | UC09 | AC16 | Trip phải tồn tại để xác định số tiền phải trả |
+| FP-TC-005 | Xác định số tiền phải trả | Empty/Null | FR18 | UC09 | AC16 | Thiếu Trip ID thì không xác định được chuyến cần xử lý |
+| FP-TC-006 | Xác định số tiền phải trả | Invalid Format/Value | FR18 | UC09 | AC16 | SRS không quy định format Trip ID; áp dụng validation Fare API |
 | FP-TC-007 | Thanh toán | Positive | FR19 | UC10 | AC17 | Customer lựa chọn tiền mặt và hệ thống ghi nhận phương thức thanh toán |
 | FP-TC-008 | Thanh toán | Positive/Integration | FR20, FR21 | UC10, UC11 | AC18 | Thanh toán điện tử được chuyển đến Payment Provider |
 | FP-TC-009 | Thanh toán | Empty/Null | FR19, FR20 | UC10 | AC17, AC18 | Customer phải chọn phương thức thanh toán |
-| FP-TC-010 | Thanh toán | Invalid Format/Value | FR19, FR20 | UC10 | AC17, AC18 | SRS hỗ trợ tiền mặt hoặc phương thức điện tử |
-| FP-TC-011 | Thanh toán | Negative/State | FR18–FR20 | UC09, UC10 | AC16–AC18 | Thanh toán diễn ra sau khi Trip hoàn thành và Fare được xác định |
-| FP-TC-012 | Thanh toán điện tử | Positive/Integration | FR21 | UC11 | AC19 | Provider trả Success thì CAB ghi nhận thanh toán thành công |
-| FP-TC-013 | Thanh toán điện tử | Negative/Exception | FR23 | UC11 | AC20 | Thanh toán thất bại phải được thông báo cho Customer |
-| FP-TC-014 | Xử lý thanh toán thất bại | Positive/Exception | FR23 | UC11 | AC20 | Hệ thống cho phép xử lý lại thanh toán thất bại theo chính sách doanh nghiệp |
-| FP-TC-015 | Xử lý thanh toán thất bại | Positive/Exception | FR19, FR23 | UC10, UC11 | AC17, AC20 | Sau thanh toán điện tử thất bại có thể xử lý lại bằng phương thức phù hợp theo workflow |
+| FP-TC-010 | Thanh toán | Invalid Format/Value | FR19, FR20 | UC10 | AC17, AC18 | Hệ thống chỉ chấp nhận phương thức thanh toán được hỗ trợ |
+| FP-TC-011 | Thanh toán | Negative/State | FR18–FR20 | UC09, UC10 | AC16–AC18 | Thanh toán chỉ thực hiện sau khi Trip hoàn thành và số tiền phải trả đã được xác định |
+| FP-TC-012 | Thanh toán điện tử | Positive/Integration | FR21 | UC11 | AC19 | Payment Provider trả Success thì CAB ghi nhận thanh toán thành công |
+| FP-TC-013 | Thanh toán điện tử | Negative/Exception | FR23 | UC11 | AC20 | Thanh toán thất bại phải được ghi nhận và thông báo cho Customer |
+| FP-TC-014 | Xử lý thanh toán thất bại | Positive/Exception | FR23 | UC11 | AC20 | Hệ thống cho phép xử lý lại thanh toán điện tử theo chính sách doanh nghiệp |
+| FP-TC-015 | Xử lý thanh toán thất bại | Positive/Exception | FR19, FR23 | UC10, UC11 | AC17, AC20 | Sau thanh toán điện tử thất bại, Customer có thể chuyển sang tiền mặt theo workflow |
 | FP-TC-016 | Thanh toán điện tử | Negative/Reliability | FR21, NFR02 | UC11 | AC20 | Lỗi Payment Provider không được làm toàn bộ hệ thống đặt xe ngừng hoạt động |
 | FP-TC-017 | Thanh toán điện tử | Empty/Null/Integration | FR21 | UC11 | AC19, AC20 | Chưa có kết quả hợp lệ từ Provider thì không được ghi nhận Payment thành công |
 | FP-TC-018 | Thanh toán điện tử | Invalid Format/Value | FR21 | UC11 | AC19, AC20 | Provider response không hợp lệ không được xem là thanh toán thành công |
 | FP-TC-019 | Bảo vệ dữ liệu thanh toán | Security | FR22, NFR05 | UC11 | AC21 | CAB không lưu trực tiếp thông tin nhạy cảm của thẻ hoặc tài khoản thanh toán |
-| FP-TC-020 | Kết thúc thanh toán | Positive | FR19–FR21 | UC10, UC11 | AC17–AC19 | Khi thanh toán thành công, hệ thống ghi nhận kết quả và hoàn tất quy trình thanh toán |
-
+| FP-TC-020 | Kết thúc thanh toán | Positive | FR19–FR21 | UC10, UC11 | AC17–AC19 | Khi thanh toán thành công, hệ thống ghi nhận kết quả, hoàn tất thanh toán và kết thúc quy trình chuyến xe |
 | NOTI-TC-001 | Thông báo booking | Positive | FR24 | UC12 | AC22 | Customer nhận thông báo khi yêu cầu đặt xe được tiếp nhận |
 | NOTI-TC-002 | Thông báo Driver nhận chuyến | Positive | FR24 | UC12 | AC22 | Customer nhận thông báo khi Driver chấp nhận chuyến |
 | NOTI-TC-003 | Thông báo Driver đến điểm đón | Positive | FR24 | UC12 | AC22 | Customer nhận thông báo khi Driver đến điểm đón |
 | NOTI-TC-004 | Thông báo hoàn thành chuyến | Positive | FR24 | UC12 | AC22 | Customer nhận thông báo khi Trip hoàn thành |
-| NOTI-TC-005 | Thông báo thanh toán | Positive | FR24 | UC12 | AC22 | Customer nhận thông báo về kết quả thanh toán |
+| NOTI-TC-005 | Thông báo thanh toán | Positive | FR24 | UC12 | AC22 | Customer nhận thông báo kết quả thanh toán |
 | NOTI-TC-006 | Thông báo thanh toán | Positive/Exception | FR24 | UC12 | AC22 | Customer được thông báo khi thanh toán thất bại |
-| NOTI-TC-007 | Thông báo chuyến mới | Positive | FR24 | UC12 | AC23 | Driver nhận được thông báo về chuyến mới |
-| NOTI-TC-008 | Thông báo cho Driver | Positive | FR24 | UC12 | AC23 | Driver nhận thông báo về thay đổi liên quan đến chuyến đang thực hiện |
+| NOTI-TC-007 | Thông báo chuyến mới | Positive | FR24 | UC12 | AC23 | Driver nhận thông báo về chuyến mới |
+| NOTI-TC-008 | Thông báo cho Driver | Positive | FR24 | UC12 | AC23 | Driver nhận thông báo thay đổi liên quan đến chuyến đang thực hiện |
 | NOTI-TC-009 | Gửi thông báo | Empty/Null | FR24 | UC12 | AC22, AC23 | Notification phải xác định đúng người nhận |
 | NOTI-TC-010 | Gửi thông báo | Empty/Null | FR24 | UC12 | AC22, AC23 | Notification phải có sự kiện cần thông báo |
 | NOTI-TC-011 | Gửi thông báo | Empty/Null | FR24 | UC12 | AC22, AC23 | Request rỗng không đủ dữ liệu để gửi Notification |
@@ -352,47 +353,45 @@
 | NOTI-TC-013 | Gửi thông báo | Invalid Format/Value | FR24 | UC12 | AC22, AC23 | SRS không quy định format Recipient ID; áp dụng validation API |
 | NOTI-TC-014 | Gửi thông báo | Negative | FR24 | UC12 | AC22, AC23 | Recipient phải tồn tại để nhận Notification |
 | NOTI-TC-015 | Gửi thông báo | Negative | FR24 | UC12 | AC22, AC23 | Notification phải được gửi đúng Customer hoặc Driver liên quan |
-| NOTI-TC-016 | Notification Provider | Negative/Reliability | FR24, NFR02 | UC12 | AC22, AC23 | Lỗi Notification Provider không được làm toàn bộ hệ thống ngừng hoạt động |
-| NOTI-TC-017 | Notification Provider | Empty/Null/Integration | FR24 | UC12 | AC22, AC23 | Chưa nhận kết quả Provider thì không được giả định gửi Notification thành công |
-| NOTI-TC-018 | Notification Provider | Invalid Format/Value | FR24 | UC12 | AC22, AC23 | Provider response không hợp lệ không được ghi nhận là gửi thành công |
-| NOTI-TC-019 | Thay đổi Notification Provider | Boundary/Extensibility | NFR11 | UC12 | — | Hệ thống phải cho phép bổ sung hoặc thay đổi Notification Provider |
-| NOTI-TC-020 | Độ tin cậy Notification | Negative/Reliability | NFR02 | UC12 | — | Lỗi Notification không được làm gián đoạn toàn bộ dịch vụ đặt xe |
-
+| NOTI-TC-016 | Notification Provider | Negative/Reliability | FR24, NFR02 | UC12 | AC22, AC23 | Lỗi Notification Provider không làm toàn bộ hệ thống ngừng hoạt động |
+| NOTI-TC-017 | Notification Provider | Empty/Null/Integration | FR24 | UC12 | AC22, AC23 | Chưa nhận kết quả Provider thì không được ghi nhận gửi thành công |
+| NOTI-TC-018 | Notification Provider | Invalid Format/Value | FR24 | UC12 | AC22, AC23 | Provider response không hợp lệ không được ghi nhận Success |
+| NOTI-TC-019 | Thay đổi Notification Provider | Boundary/Extensibility | NFR11 | UC12 | — | Hệ thống cho phép thay đổi hoặc bổ sung Notification Provider mà không xây dựng lại toàn bộ ứng dụng |
+| NOTI-TC-020 | Độ tin cậy Notification | Negative/Reliability | NFR02 | UC12 | — | Lỗi Notification không làm gián đoạn toàn bộ dịch vụ đặt xe |
 | THR-TC-001 | Xem lịch sử chuyến | Positive | FR25 | UC13 | AC24 | Customer xem được lịch sử các chuyến đã thực hiện |
-| THR-TC-002 | Xem lịch sử chuyến | Positive | FR25 | UC13 | AC24 | Lịch sử hiển thị các thông tin liên quan đến chuyến |
-| THR-TC-003 | Xem lịch sử chuyến | Positive | FR25 | UC13 | AC24 | Lịch sử chuyến hiển thị thông tin số tiền phải trả |
-| THR-TC-004 | Xem lịch sử chuyến | Empty/Null | FR25 | UC13 | AC24 | Customer được phép xem lịch sử; SRS không quy định cách hiển thị khi chưa có chuyến |
-| THR-TC-005 | Xem lịch sử chuyến | Negative/Security | FR25, NFR06 | UC13 | AC24 | Chức năng lịch sử yêu cầu Customer đã xác thực |
-| THR-TC-006 | Xem lịch sử chuyến | Negative/Security | NFR06 | UC13 | AC24 | Credential không hợp lệ không được truy cập lịch sử |
-| THR-TC-007 | Xem lịch sử chuyến | Negative/Authorization | FR25, NFR05 | UC13 | AC24 | Dữ liệu lịch sử chuyến của Customer phải được bảo vệ khỏi truy cập trái phép |
+| THR-TC-002 | Xem lịch sử chuyến | Positive | FR25 | UC13 | AC24 | Lịch sử hiển thị thông tin liên quan đến chuyến |
+| THR-TC-003 | Xem lịch sử chuyến | Positive | FR25 | UC13 | AC24 | Lịch sử chuyến hiển thị số tiền phải trả |
+| THR-TC-004 | Xem lịch sử chuyến | Empty/Null | FR25 | UC13 | AC24 | SRS cho phép xem lịch sử nhưng không quy định cách hiển thị khi chưa có dữ liệu |
+| THR-TC-005 | Xem lịch sử chuyến | Negative/Security | FR25, NFR06 | UC13 | AC24 | Customer phải được xác thực trước khi xem lịch sử chuyến |
+| THR-TC-006 | Xem lịch sử chuyến | Negative/Security | NFR06 | UC13 | AC24 | Token không hợp lệ không được truy cập lịch sử |
+| THR-TC-007 | Xem lịch sử chuyến | Negative/Authorization | FR25, NFR05 | UC13 | AC24 | Lịch sử chuyến của Customer phải được bảo vệ khỏi truy cập trái phép |
 | THR-TC-008 | Xem chi tiết lịch sử chuyến | Negative | FR25 | UC13 | AC24 | Trip không tồn tại thì không có dữ liệu lịch sử tương ứng |
 | THR-TC-009 | Xem chi tiết lịch sử chuyến | Invalid Format/Value | FR25 | UC13 | AC24 | SRS không quy định format Trip ID; áp dụng validation API |
 | THR-TC-010 | Xem chi tiết lịch sử chuyến | Empty/Null | FR25 | UC13 | AC24 | Thiếu Trip ID thì không xác định được chuyến cần xem |
 | THR-TC-011 | Đánh giá tài xế | Positive | FR26 | UC14 | AC25 | Customer có thể đánh giá Driver sau khi Trip hoàn thành |
-| THR-TC-012 | Đánh giá tài xế | Boundary/State | FR26 | UC14 | AC25 | Customer không được đánh giá trước khi chuyến hoàn thành |
-| THR-TC-013 | Đánh giá tài xế | Boundary/State | FR26 | UC14 | AC25 | Khi Trip đã hoàn thành, Customer được phép đánh giá Driver |
-| THR-TC-014 | Đánh giá tài xế | Empty/Null | FR26 | UC14 | AC25 | SRS chưa định nghĩa chi tiết trường Rating; áp dụng validation Rating API |
-| THR-TC-015 | Đánh giá tài xế | Invalid Format/Value | FR26 | UC14 | AC25 | SRS chưa quy định thang điểm Rating; áp dụng rule của API |
+| THR-TC-012 | Đánh giá tài xế | Boundary/State | FR26 | UC14 | AC25 | Customer không được đánh giá trước khi Trip hoàn thành |
+| THR-TC-013 | Đánh giá tài xế | Boundary/State | FR26 | UC14 | AC25 | Sau khi Trip hoàn thành, Customer được phép đánh giá Driver |
+| THR-TC-014 | Đánh giá tài xế | Empty/Null | FR26 | UC14 | AC25 | SRS chưa quy định chi tiết trường Rating; áp dụng validation Rating API |
+| THR-TC-015 | Đánh giá tài xế | Invalid Format/Value | FR26 | UC14 | AC25 | SRS chưa quy định thang điểm Rating; áp dụng rule Rating API |
 | THR-TC-016 | Đánh giá tài xế | Negative/Security | FR26, NFR06 | UC14 | AC25 | Customer phải được xác thực trước khi gửi Rating |
 | THR-TC-017 | Đánh giá tài xế | Negative/Authorization | FR26, NFR05 | UC14 | AC25 | Customer chỉ được đánh giá Driver của chuyến liên quan đến mình |
-| THR-TC-018 | Đánh giá tài xế | Negative | FR26 | UC14 | AC25 | Chuyến phải tồn tại và hoàn thành trước khi thực hiện đánh giá |
+| THR-TC-018 | Đánh giá tài xế | Negative | FR26 | UC14 | AC25 | Trip phải tồn tại và hoàn thành trước khi đánh giá |
 | THR-TC-019 | Đánh giá tài xế | Invalid Format/Value | FR26 | UC14 | AC25 | SRS không quy định format Trip ID; áp dụng validation API |
 | THR-TC-020 | Đánh giá tài xế | Positive | FR26 | UC14 | AC25 | Rating được ghi nhận cho đúng Customer và Driver sau khi chuyến hoàn thành |
-
 | OR-TC-001 | Quản lý phương tiện | Positive | FR27 | UC17 | AC28 | Operation Staff có thể xem và quản lý thông tin phương tiện |
 | OR-TC-002 | Quản lý phương tiện | Positive | FR27 | UC17 | AC28 | Operation Staff có thể cập nhật thông tin phương tiện |
 | OR-TC-003 | Quản lý phương tiện | Empty/Null | FR27 | UC17 | AC28 | Thiếu Vehicle ID thì không xác định được phương tiện cần thao tác |
 | OR-TC-004 | Quản lý phương tiện | Invalid Format/Value | FR27 | UC17 | AC28 | SRS không quy định format Vehicle ID; áp dụng validation API |
 | OR-TC-005 | Quản lý khách hàng | Positive | FR28 | UC15 | AC26 | Operation Staff có thể quản lý thông tin Customer |
-| OR-TC-006 | Quản lý khách hàng | Negative/Authorization | FR28, NFR07 | UC15 | AC26, AC32 | Thao tác quản trị Customer phải được kiểm soát quyền |
-| OR-TC-007 | Quản lý khách hàng | Empty/Null | FR28 | UC15 | AC26 | Thiếu Customer ID thì không xác định được Customer cần quản lý |
+| OR-TC-006 | Quản lý khách hàng | Negative/Authorization | FR28, NFR07 | UC15 | AC26, AC32 | Thao tác quản trị Customer phải được kiểm soát quyền truy cập |
+| OR-TC-007 | Quản lý khách hàng | Empty/Null | FR28 | UC15 | AC26 | Thiếu Customer ID thì không xác định được đối tượng cần quản lý |
 | OR-TC-008 | Quản lý tài xế | Positive | FR29 | UC16 | AC27 | Operation Staff có thể quản lý thông tin Driver |
 | OR-TC-009 | Quản lý tài xế | Negative/Authorization | FR29, NFR07 | UC16 | AC27, AC32 | Người không có quyền không được thực hiện thao tác quản trị Driver |
 | OR-TC-010 | Quản lý tài xế | Invalid Format/Value | FR29 | UC16 | AC27 | SRS không quy định format Driver ID; áp dụng validation API |
 | OR-TC-011 | Quản lý chuyến đi | Positive | FR30 | UC18 | AC29 | Operation Staff có thể quản lý và xem các chuyến đang diễn ra |
-| OR-TC-012 | Quản lý chuyến đi | Negative | FR30 | UC18 | AC29 | Trip không tồn tại thì không có dữ liệu chuyến để quản lý |
+| OR-TC-012 | Quản lý chuyến đi | Negative | FR30 | UC18 | AC29 | Trip không tồn tại thì không có dữ liệu để quản lý |
 | OR-TC-013 | Tra cứu giao dịch | Positive | FR31 | UC19 | AC31 | Operation Staff có thể tra cứu lịch sử giao dịch |
-| OR-TC-014 | Tra cứu giao dịch | Negative | FR31 | UC19 | AC31 | Giao dịch không tồn tại thì hệ thống không có dữ liệu tương ứng |
+| OR-TC-014 | Tra cứu giao dịch | Negative | FR31 | UC19 | AC31 | Giao dịch không tồn tại thì không có dữ liệu tương ứng |
 | OR-TC-015 | Tra cứu giao dịch | Invalid Format/Value | FR31 | UC19 | AC31 | SRS không quy định format Transaction ID; áp dụng validation API |
 | OR-TC-016 | Xử lý chuyến lỗi | Positive | FR32 | UC20 | AC30 | Operation Staff có thể xem và hỗ trợ xử lý Trip bị lỗi |
 | OR-TC-017 | Xử lý chuyến lỗi | Negative/State | FR32 | UC20 | AC30 | Luồng xử lý chuyến lỗi chỉ áp dụng cho Trip phát sinh lỗi |
