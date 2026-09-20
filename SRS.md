@@ -636,7 +636,6 @@ Trong đó **UC06 – Tìm và phân công tài xế** là Use Case có nhiều 
 
 ---
 
-## 12.8. Traceability giữa Use Case và Functional Requirements
 
 ## 12.8. Traceability giữa Use Case và Functional Requirements
 
@@ -645,24 +644,25 @@ Trong đó **UC06 – Tìm và phân công tài xế** là Use Case có nhiều 
 | **UC01 – Đăng ký tài khoản** | FR01 |
 | **UC02 – Đăng nhập** | FR02 |
 | **UC03 – Cập nhật thông tin** | FR03 |
-| **UC04 – Quản lý phương tiện** | FR27 |
-| **UC05 – Đặt xe** | FR04–FR07 |
-| **UC06 – Tìm và phân công tài xế** | FR08–FR10, FR13–FR14, FR17 |
-| **UC07 – Chấp nhận / từ chối chuyến** | FR11–FR12 |
-| **UC08 – Theo dõi chuyến** | FR16–FR17 |
-| **UC09 – Thực hiện chuyến** | FR15 |
-| **UC10 – Tính cước** | FR18 |
-| **UC11 – Thanh toán** | FR19–FR20 |
-| **UC12 – Xử lý thanh toán điện tử** | FR21–FR23 |
-| **UC13 – Gửi thông báo** | FR14, FR24 |
-| **UC14 – Xem lịch sử chuyến** | FR25 |
-| **UC15 – Đánh giá tài xế** | FR26 |
-| **UC16 – Quản lý khách hàng** | FR28 |
-| **UC17 – Quản lý tài xế** | FR29 |
-| **UC18 – Quản lý phương tiện** | FR27 |
-| **UC19 – Quản lý chuyến đi** | FR30 |
-| **UC20 – Tra cứu giao dịch / Xử lý chuyến lỗi** | FR31–FR32 |
-| **UC21 – Xem báo cáo** | FR33 |
+| **UC04 – Đặt xe** | FR04–FR07 |
+| **UC05 – Tìm và phân công tài xế** | FR08–FR10, FR13–FR14, FR17 |
+| **UC06 – Chấp nhận / từ chối chuyến** | FR11–FR12 |
+| **UC07 – Theo dõi chuyến** | FR16–FR17 |
+| **UC08 – Thực hiện chuyến** | FR15 |
+| **UC09 – Tính cước** | FR18 |
+| **UC10 – Thanh toán** | FR19–FR20 |
+| **UC11 – Xử lý thanh toán điện tử** | FR21–FR23 |
+| **UC12 – Gửi thông báo** | FR24 |
+| **UC13 – Xem lịch sử chuyến** | FR25 |
+| **UC14 – Đánh giá tài xế** | FR26 |
+| **UC15 – Quản lý khách hàng** | FR28 |
+| **UC16 – Quản lý tài xế** | FR29 |
+| **UC17 – Quản lý phương tiện** | FR27 |
+| **UC18 – Quản lý chuyến đi** | FR30 |
+| **UC19 – Tra cứu lịch sử giao dịch** | FR31 |
+| **UC20 – Xử lý chuyến bị lỗi** | FR32 |
+| **UC21 – Xem báo cáo hoạt động** | FR33 |
+
 ---
 
 ## 12.9. Phạm vi Use Case
